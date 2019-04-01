@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/installed_apps.iml" filepath="$PROJECT_DIR$/installed_apps.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/installed_apps_android.iml" filepath="$PROJECT_DIR$/android/installed_apps_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/example/android/installed_apps_example_android.iml" filepath="$PROJECT_DIR$/example/android/installed_apps_example_android.iml" />
+    </modules>
+  </component>
+</project>
