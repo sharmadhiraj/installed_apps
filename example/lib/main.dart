@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:installed_apps/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
 
 void main() => runApp(App());
@@ -11,17 +12,23 @@ class App extends MaterialApp {
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    getInstalledApps();
     return Scaffold(
-      appBar: AppBar(title: const Text("Installed Apps Example")),
-      body: Center(
-        child: Text('Running on: A'),
-      ),
-    );
-  }
-
-  Future<void> getInstalledApps() async {
-    List<dynamic> installedApps = await InstalledApps.installedApps;
-    print(installedApps);
+        appBar: AppBar(title: const Text("Installed Apps Example")),
+        body: FutureBuilder<List<AppInfo>>(
+            future: InstalledApps.getInstalledApps(),
+            builder: (BuildContext buildContext,
+                AsyncSnapshot<List<AppInfo>> snapshot) {
+              return snapshot.hasData
+                  ? ListView.builder(
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (context, index) {
+                        AppInfo app = snapshot.data[index];
+                        return ListTile(
+                          title: Text(app.name),
+                          onTap: () => InstalledApps.startApp(app.packageName),
+                        );
+                      })
+                  : Center(child: Text("Getting installed apps ...."));
+            }));
   }
 }

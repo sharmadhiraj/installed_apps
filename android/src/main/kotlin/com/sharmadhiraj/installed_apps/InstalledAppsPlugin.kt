@@ -1,5 +1,7 @@
 package com.sharmadhiraj.installed_apps
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.N_MR1
+import android.widget.Toast
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -27,13 +30,22 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        if (call.method == "getInstalledApps") {
-            val packageManager = registrar.context().packageManager
-            val installedApps = packageManager.getInstalledApplications(0)
-            result.success(installedApps.map { app -> appToMap(packageManager, app) })
-        } else {
-            result.notImplemented()
+        when {
+            call.method == "getInstalledApps" -> result.success(getInstalledApps())
+            call.method == "startApp" -> {
+                val packageName: String? = call.argument("package_name")
+                startApp(packageName)
+            }
+            else -> result.notImplemented()
         }
+    }
+
+    private fun getInstalledApps(): List<Map<String, Any?>> {
+        val packageManager = getPackageManager()
+        val installedApps = packageManager.getInstalledApplications(0)
+        return installedApps
+                .filter { app -> !isSystemApp(app.packageName) }
+                .map { app -> appToMap(packageManager, app) }
     }
 
     private fun appToMap(packageManager: PackageManager, app: ApplicationInfo): HashMap<String, Any?> {
@@ -64,4 +76,41 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         return bitmap
     }
 
+    @SuppressLint("NewApi")
+    private fun startApp(packageName: String?) {
+        if (packageName.isNullOrBlank()) {
+            toast("Empty or no package name.")
+            return
+        }
+        try {
+            val appName = getAppName(packageName)
+            toast("Starting app $appName")
+            val launchIntent = getPackageManager().getLaunchIntentForPackage(packageName)
+            registrar.context().startActivity(launchIntent)
+        } catch (e: Exception) {
+            toast("Unable to find app with package name : $packageName")
+        }
+    }
+
+    private fun toast(text: String) {
+        Toast.makeText(getContext(), text, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun getAppName(packageName: String?): String {
+        return getPackageManager()
+                .getApplicationLabel(getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA))
+                .toString()
+    }
+
+    private fun getContext(): Context {
+        return registrar.context()
+    }
+
+    private fun getPackageManager(): PackageManager {
+        return getContext().packageManager
+    }
+
+    private fun isSystemApp(packageName: String): Boolean {
+        return getPackageManager().getLaunchIntentForPackage(packageName) == null
+    }
 }
