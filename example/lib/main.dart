@@ -26,6 +26,8 @@ class HomeScreen extends StatelessWidget {
                         return ListTile(
                           title: Text(app.name),
                           onTap: () => InstalledApps.startApp(app.packageName),
+                          onLongPress: () =>
+                              InstalledApps.openSettings(app.packageName),
                         );
                       })
                   : Center(child: Text("Getting installed apps ...."));

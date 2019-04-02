@@ -1,8 +1,8 @@
 name: installed_apps
 description: Get list of installed apps.
-version: 0.0.1
+version: 0.0.3
 author: Dhiraj Sharma <sharmadhiraj.np@gmail.com>
-homepage: https://pub.dartlang.org/packages/installed_apps
+homepage: https://github.com/sharmadhiraj/installed_apps
 
 environment:
   sdk: ">=2.1.0 <3.0.0"

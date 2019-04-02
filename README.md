@@ -16,5 +16,9 @@ List<AppInfo> apps = await InstalledApps.getInstalledApps();
 ```
 InstalledApps.startApp("com.sharmadhiraj.installed_apps")
 ```
+## Open app settings screen (App Info) with package name
+```
+InstalledApps.openSettings("com.sharmadhiraj.installed_apps")
+```
 
 ## More updates coming soon !!!

@@ -16,4 +16,8 @@ class InstalledApps {
   static startApp(String packageName) {
     _channel.invokeMethod("startApp", {"package_name": packageName});
   }
+
+  static openSettings(String packageName) {
+    _channel.invokeMethod("openSettings", {"package_name": packageName});
+  }
 }

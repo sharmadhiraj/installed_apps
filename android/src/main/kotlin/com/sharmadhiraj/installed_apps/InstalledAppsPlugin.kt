@@ -2,6 +2,8 @@ package com.sharmadhiraj.installed_apps
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,8 +11,10 @@ import android.graphics.Bitmap.createBitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.N_MR1
+import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.widget.Toast
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -35,6 +39,10 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
             call.method == "startApp" -> {
                 val packageName: String? = call.argument("package_name")
                 startApp(packageName)
+            }
+            call.method == "openSettings" -> {
+                val packageName: String? = call.argument("package_name")
+                openSettings(packageName)
             }
             else -> result.notImplemented()
         }
@@ -110,7 +118,19 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         return getContext().packageManager
     }
 
+    @SuppressLint("NewApi")
     private fun isSystemApp(packageName: String): Boolean {
         return getPackageManager().getLaunchIntentForPackage(packageName) == null
     }
+
+    @SuppressLint("InlinedApi")
+    private fun openSettings(packageName: String?) {
+        val intent = Intent()
+        intent.flags = FLAG_ACTIVITY_NEW_TASK
+        intent.action = ACTION_APPLICATION_DETAILS_SETTINGS
+        val uri = Uri.fromParts("package", packageName, null)
+        intent.data = uri
+        getContext().startActivity(intent)
+    }
+
 }
