@@ -1,6 +1,6 @@
 name: installed_apps
-description: Get list of installed apps.
-version: 0.0.3
+description: Flutter plugin to get list of installed apps, with other app utitlities. (Currently Android only)
+version: 0.0.4
 author: Dhiraj Sharma <sharmadhiraj.np@gmail.com>
 homepage: https://github.com/sharmadhiraj/installed_apps
 
