@@ -7,8 +7,13 @@ class AppInfo {
   String versionName;
   int versionCode;
 
-  AppInfo(this.name, this.icon, this.packageName, this.versionName,
-      this.versionCode);
+  AppInfo(
+    this.name,
+    this.icon,
+    this.packageName,
+    this.versionName,
+    this.versionCode,
+  );
 
   factory AppInfo.create(dynamic data) {
     return AppInfo(
@@ -18,5 +23,9 @@ class AppInfo {
       data["version_name"],
       data["version_code"],
     );
+  }
+
+  String getVersionInfo() {
+    return "$versionName ($versionCode)";
   }
 }

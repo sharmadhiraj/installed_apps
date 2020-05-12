@@ -1,24 +1,34 @@
 # Installed Apps
 
-Get list of installed apps. (Currently only Android is supported)
+Flutter <a href="https://pub.dev/packages/installed_apps" target="_blank">plugin</a> with utility methods related to installed apps on device.
+(Currently only Android is supported.)
 
 ## Getting Started
-Import package
+1. <a href="https://pub.dev/packages/installed_apps#-installing-tab-" target="_blank">Installation Guide</a>
+2. <a href="https://pub.dev/packages/installed_apps#-example-tab-" target="_blank">Example</a>
+<hr/>
+
+#### Get list of installed apps 
 ```
-import 'package:installed_apps/installed_apps.dart';
-import 'package:installed_apps/app_info.dart';
+List<AppInfo> apps = await InstalledApps.getInstalledApps(bool excludeSystemApps, bool withIcon, String packageNamePrefix);
 ```
-## Get list of installed apps 
+*Use packageNamePrefix to filter for apps that have package name starting with certain prefix.
+
+#### Get app info with package name 
 ```
-List<AppInfo> apps = await InstalledApps.getInstalledApps();
-```
-## Start app with package name
-```
-InstalledApps.startApp("com.sharmadhiraj.installed_apps")
-```
-## Open app settings screen (App Info) with package name
-```
-InstalledApps.openSettings("com.sharmadhiraj.installed_apps")
+AppInfo app = await InstalledApps.getAppInfo(String packageName);
 ```
 
-## More updates coming soon !!!
+#### Start app with package name
+```
+InstalledApps.startApp(String packageName)
+```
+#### Open app settings screen (App Info) with package name
+```
+InstalledApps.openSettings(String packageName)
+```
+#### Check if app is system app
+```
+bool isSystemApp = await InstalledApps.isSystemApp(String packageName)
+```
+
