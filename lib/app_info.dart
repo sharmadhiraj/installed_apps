@@ -1,11 +1,11 @@
 import 'dart:typed_data';
 
 class AppInfo {
-  String name;
-  Uint8List icon;
-  String packageName;
-  String versionName;
-  int versionCode;
+  String? name;
+  Uint8List? icon;
+  String? packageName;
+  String? versionName;
+  int? versionCode;
 
   AppInfo(
     this.name,

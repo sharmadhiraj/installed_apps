@@ -76,12 +76,14 @@ class HomeScreen extends StatelessWidget {
               child: ListTile(
                 title: Text("Check If System App"),
                 subtitle: Text("Check if app is system app with package name"),
-                onTap: () => InstalledApps.isSystemApp("com.google.android.gm")
-                    .then((value) => _showDialog(
-                        context,
-                        value
-                            ? "The requested app is system app."
-                            : "Requested app in not system app.")),
+                onTap: () =>
+                    InstalledApps.isSystemApp("com.google.android.gm").then(
+                  (bool? value) => _showDialog(
+                      context,
+                      value ?? false
+                          ? "The requested app is system app."
+                          : "Requested app in not system app."),
+                ),
               ),
             ),
           )
@@ -120,21 +122,21 @@ class InstalledAppsScreen extends StatelessWidget {
           return snapshot.connectionState == ConnectionState.done
               ? snapshot.hasData
                   ? ListView.builder(
-                      itemCount: snapshot.data.length,
+                      itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
-                        AppInfo app = snapshot.data[index];
+                        AppInfo app = snapshot.data![index];
                         return Card(
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: Colors.transparent,
-                              child: Image.memory(app.icon),
+                              child: Image.memory(app.icon!),
                             ),
-                            title: Text(app.name),
+                            title: Text(app.name!),
                             subtitle: Text(app.getVersionInfo()),
                             onTap: () =>
-                                InstalledApps.startApp(app.packageName),
+                                InstalledApps.startApp(app.packageName!),
                             onLongPress: () =>
-                                InstalledApps.openSettings(app.packageName),
+                                InstalledApps.openSettings(app.packageName!),
                           ),
                         );
                       },
@@ -162,15 +164,15 @@ class AppInfoScreen extends StatelessWidget {
                   ? Center(
                       child: Column(
                         children: [
-                          Image.memory(snapshot.data.icon),
+                          Image.memory(snapshot.data!.icon!),
                           Text(
-                            snapshot.data.name,
+                            snapshot.data!.name!,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 40,
                             ),
                           ),
-                          Text(snapshot.data.getVersionInfo())
+                          Text(snapshot.data!.getVersionInfo())
                         ],
                       ),
                     )
