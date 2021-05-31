@@ -1,3 +1,6 @@
+## 1.2.0
+* Null Safety migration
+
 ## 1.1.1
 * Add getAppInfo() & isSystemApp() method.
 * Refactor existing methods
