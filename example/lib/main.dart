@@ -26,7 +26,8 @@ class HomeScreen extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => InstalledAppsScreen()),
+                    builder: (context) => InstalledAppsScreen(),
+                  ),
                 ),
               ),
             ),
@@ -39,7 +40,9 @@ class HomeScreen extends StatelessWidget {
                 subtitle: Text("Get app info with package name"),
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AppInfoScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => AppInfoScreen(),
+                  ),
                 ),
               ),
             ),
@@ -109,39 +112,40 @@ class InstalledAppsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Installed Apps"),
-        ),
-        body: FutureBuilder<List<AppInfo>>(
-            future: InstalledApps.getInstalledApps(true, true),
-            builder: (BuildContext buildContext,
-                AsyncSnapshot<List<AppInfo>> snapshot) {
-              return snapshot.connectionState == ConnectionState.done
-                  ? snapshot.hasData
-                      ? ListView.builder(
-                          itemCount: snapshot.data.length,
-                          itemBuilder: (context, index) {
-                            AppInfo app = snapshot.data[index];
-                            return Card(
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: Colors.transparent,
-                                  child: Image.memory(app.icon),
-                                ),
-                                title: Text(app.name),
-                                subtitle: Text(app.getVersionInfo()),
-                                onTap: () =>
-                                    InstalledApps.startApp(app.packageName),
-                                onLongPress: () =>
-                                    InstalledApps.openSettings(app.packageName),
-                              ),
-                            );
-                          })
-                      : Center(
-                          child: Text(
-                              "Error occurred while getting installed apps ...."))
-                  : Center(child: Text("Getting installed apps ...."));
-            }));
+      appBar: AppBar(title: Text("Installed Apps")),
+      body: FutureBuilder<List<AppInfo>>(
+        future: InstalledApps.getInstalledApps(true, true),
+        builder:
+            (BuildContext buildContext, AsyncSnapshot<List<AppInfo>> snapshot) {
+          return snapshot.connectionState == ConnectionState.done
+              ? snapshot.hasData
+                  ? ListView.builder(
+                      itemCount: snapshot.data.length,
+                      itemBuilder: (context, index) {
+                        AppInfo app = snapshot.data[index];
+                        return Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.transparent,
+                              child: Image.memory(app.icon),
+                            ),
+                            title: Text(app.name),
+                            subtitle: Text(app.getVersionInfo()),
+                            onTap: () =>
+                                InstalledApps.startApp(app.packageName),
+                            onLongPress: () =>
+                                InstalledApps.openSettings(app.packageName),
+                          ),
+                        );
+                      },
+                    )
+                  : Center(
+                      child: Text(
+                          "Error occurred while getting installed apps ...."))
+              : Center(child: Text("Getting installed apps ...."));
+        },
+      ),
+    );
   }
 }
 
@@ -149,29 +153,31 @@ class AppInfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("App Info"),
-        ),
-        body: FutureBuilder<AppInfo>(
-            future: InstalledApps.getAppInfo("com.google.android.gm"),
-            builder:
-                (BuildContext buildContext, AsyncSnapshot<AppInfo> snapshot) {
-              return snapshot.connectionState == ConnectionState.done
-                  ? snapshot.hasData
-                      ? Center(
-                          child: Column(
-                            children: [
-                              Image.memory(snapshot.data.icon),
-                              Text(snapshot.data.name,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 40)),
-                              Text(snapshot.data.getVersionInfo())
-                            ],
+      appBar: AppBar(title: Text("App Info")),
+      body: FutureBuilder<AppInfo>(
+        future: InstalledApps.getAppInfo("com.google.android.gm"),
+        builder: (BuildContext buildContext, AsyncSnapshot<AppInfo> snapshot) {
+          return snapshot.connectionState == ConnectionState.done
+              ? snapshot.hasData
+                  ? Center(
+                      child: Column(
+                        children: [
+                          Image.memory(snapshot.data.icon),
+                          Text(
+                            snapshot.data.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 40,
+                            ),
                           ),
-                        )
-                      : Center(child: Text("Erro while getting app info ...."))
-                  : Center(child: Text("Getting app info ...."));
-            }));
+                          Text(snapshot.data.getVersionInfo())
+                        ],
+                      ),
+                    )
+                  : Center(child: Text("Error while getting app info ...."))
+              : Center(child: Text("Getting app info ...."));
+        },
+      ),
+    );
   }
 }
