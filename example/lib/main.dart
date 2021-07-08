@@ -159,7 +159,6 @@ class AppInfoScreen extends StatelessWidget {
       body: FutureBuilder<AppInfo?>(
         future: InstalledApps.getAppInfo("com.google.android.gm"),
         builder: (BuildContext buildContext, AsyncSnapshot<AppInfo?> snapshot) {
-          if (snapshot.hasError) throw snapshot.error!;
           return snapshot.connectionState == ConnectionState.done
               ? snapshot.hasData
                   ? Center(
