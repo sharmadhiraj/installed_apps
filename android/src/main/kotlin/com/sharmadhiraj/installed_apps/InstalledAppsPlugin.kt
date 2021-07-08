@@ -32,9 +32,7 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         when (call.method) {
             "getInstalledApps" -> {
                 val includeSystemApps = call.argument("exclude_system_apps") ?: true
-                val withIcon = call.argument("with_icon") ?: false
-                val packageNamePrefix: String = call.argument("package_name_prefix") ?: ""
-                result.success(getInstalledApps(includeSystemApps, withIcon, packageNamePrefix))
+                result.success(getInstalledApps(includeSystemApps))
             }
             "startApp" -> {
                 val packageName: String? = call.argument("package_name")
@@ -61,19 +59,12 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         }
     }
 
-    private fun getInstalledApps(
-        excludeSystemApps: Boolean,
-        withIcon: Boolean,
-        packageNamePrefix: String
-    ): List<Map<String, Any?>> {
+    private fun getInstalledApps(excludeSystemApps: Boolean): List<Map<String, Any?>> {
         val packageManager = getPackageManager(registrar)
-        var installedApps = packageManager.getInstalledApplications(0)
-        if (excludeSystemApps)
-            installedApps = installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
-        if (packageNamePrefix.isNotEmpty())
-            installedApps =
-                installedApps.filter { app -> app.packageName.startsWith(packageNamePrefix.toLowerCase(ENGLISH)) }
-        return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon) }
+        return packageManager.getInstalledApplications(0).run {
+            if (excludeSystemApps) filterNot { isSystemApp(packageManager, it.packageName) }
+            else this
+        }.map { convertAppToMap(packageManager, it) }
     }
 
     private fun startApp(packageName: String?): Boolean {
@@ -92,9 +83,8 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         Toast.makeText(getContext(registrar), text, if (short) LENGTH_SHORT else LENGTH_LONG).show()
     }
 
-    private fun isSystemApp(packageManager: PackageManager, packageName: String): Boolean {
-        return packageManager.getLaunchIntentForPackage(packageName) == null
-    }
+    private fun isSystemApp(packageManager: PackageManager, packageName: String) =
+        packageManager.getLaunchIntentForPackage(packageName) == null
 
     private fun openSettings(packageName: String?) {
         val intent = Intent()
@@ -105,11 +95,10 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         getContext(registrar).startActivity(intent)
     }
 
-    private fun getAppInfo(packageManager: PackageManager, packageName: String): Map<String, Any?>? {
-        return try {
-            convertAppToMap(packageManager, packageManager.getApplicationInfo(packageName, 0), true);
+    private fun getAppInfo(packageManager: PackageManager, packageName: String) =
+        try {
+            convertAppToMap(packageManager, packageManager.getApplicationInfo(packageName, 0));
         } catch (e: PackageManager.NameNotFoundException) {
             null;
         }
-    }
 }

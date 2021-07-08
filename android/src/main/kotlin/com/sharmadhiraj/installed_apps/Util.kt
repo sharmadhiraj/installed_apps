@@ -21,12 +21,10 @@ class Util {
         fun convertAppToMap(
             packageManager: PackageManager,
             app: ApplicationInfo,
-            withIcon: Boolean
         ): HashMap<String, Any?> {
             val map = HashMap<String, Any?>()
             map["name"] = packageManager.getApplicationLabel(app)
             map["packageName"] = app.packageName
-            map["icon"] = if (withIcon) drawableToByteArray(app.loadIcon(packageManager)) else null
             val packageInfo = packageManager.getPackageInfo(app.packageName, 0)
             map["versionName"] = packageInfo.versionName
             map["versionCode"] = getVersionCode(packageInfo)

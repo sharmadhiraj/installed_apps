@@ -117,7 +117,7 @@ class InstalledAppsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Installed Apps")),
       body: FutureBuilder<List<AppInfo>>(
-        future: InstalledApps.getInstalledApps(withIcon: true),
+        future: InstalledApps.getInstalledApps(),
         builder:
             (BuildContext buildContext, AsyncSnapshot<List<AppInfo>> snapshot) {
           return snapshot.connectionState == ConnectionState.done
@@ -130,7 +130,7 @@ class InstalledAppsScreen extends StatelessWidget {
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: Colors.transparent,
-                              child: Image.memory(app.icon!),
+                              // child: Image.memory(app.icon!),
                             ),
                             title: Text(app.name),
                             subtitle: Text(app.getVersionInfo()),
@@ -165,7 +165,7 @@ class AppInfoScreen extends StatelessWidget {
                   ? Center(
                       child: Column(
                         children: [
-                          Image.memory(snapshot.data!.icon!),
+                          // Image.memory(snapshot.data!.icon!),
                           Text(
                             snapshot.data!.name,
                             style: const TextStyle(

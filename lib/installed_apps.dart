@@ -8,15 +8,11 @@ class InstalledApps {
 
   static Future<List<AppInfo>> getInstalledApps({
     bool excludeSystemApps = true,
-    bool withIcon = false,
-    String packageNamePrefix = '',
   }) async {
     final appsInfoJson = (await _channel.invokeMethod<List<dynamic>>(
       'getInstalledApps',
       {
         'exclude_system_apps': excludeSystemApps,
-        'with_icon': withIcon,
-        'package_name_prefix': packageNamePrefix,
       },
     ))!;
     return appsInfoJson

@@ -1,8 +1,5 @@
-import 'dart:typed_data';
-
 class AppInfo {
   final String name;
-  final Uint8List? icon;
   final String packageName;
   final String versionName;
   final int versionCode;
@@ -10,7 +7,6 @@ class AppInfo {
 
   const AppInfo({
     required this.name,
-    required this.icon,
     required this.packageName,
     required this.versionName,
     required this.versionCode,
@@ -20,7 +16,6 @@ class AppInfo {
   AppInfo.fromJson(Map<String, dynamic> json)
       : this(
           name: json['name'] as String,
-          icon: json['icon'] as Uint8List?,
           packageName: json['packageName'] as String,
           versionName: json['versionName'] as String,
           versionCode: json['versionCode'] as int,
