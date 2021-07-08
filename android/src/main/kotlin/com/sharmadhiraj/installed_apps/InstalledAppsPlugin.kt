@@ -31,28 +31,28 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "getInstalledApps" -> {
-                val includeSystemApps = call.argument("exclude_system_apps") ?: true
+                val includeSystemApps = call.argument("excludeSystemApps") ?: true
                 result.success(getInstalledApps(includeSystemApps))
             }
             "startApp" -> {
-                val packageName: String? = call.argument("package_name")
+                val packageName: String? = call.argument("packageName")
                 result.success(startApp(packageName))
             }
             "openSettings" -> {
-                val packageName: String? = call.argument("package_name")
+                val packageName: String? = call.argument("packageName")
                 openSettings(packageName)
             }
             "toast" -> {
                 val message = call.argument("message") ?: ""
-                val short = call.argument("short_length") ?: true
+                val short = call.argument("shortLength") ?: true
                 toast(message, short);
             }
             "getAppInfo" -> {
-                val packageName: String = call.argument("package_name") ?: ""
+                val packageName: String = call.argument("packageName") ?: ""
                 result.success(getAppInfo(getPackageManager(registrar), packageName))
             }
             "isSystemApp" -> {
-                val packageName: String = call.argument("package_name") ?: ""
+                val packageName: String = call.argument("packageName") ?: ""
                 result.success(isSystemApp(getPackageManager(registrar), packageName))
             }
             else -> result.notImplemented()

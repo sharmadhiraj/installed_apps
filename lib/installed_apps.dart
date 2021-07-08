@@ -12,7 +12,7 @@ class InstalledApps {
     final appsInfoJson = (await _channel.invokeListMethod<Map>(
       'getInstalledApps',
       {
-        'exclude_system_apps': excludeSystemApps,
+        'excludeSystemApps': excludeSystemApps,
       },
     ))!;
     return appsInfoJson
@@ -23,13 +23,13 @@ class InstalledApps {
 
   static Future<bool?> startApp(String packageName) => _channel.invokeMethod(
         'startApp',
-        {'package_name': packageName},
+        {'packageName': packageName},
       );
 
   static Future<void> openSettings(String packageName) async {
     await _channel.invokeMethod(
       'openSettings',
-      {'package_name': packageName},
+      {'packageName': packageName},
     );
   }
 
@@ -41,7 +41,7 @@ class InstalledApps {
       'toast',
       {
         'message': message,
-        'short_length': isShortLength,
+        'shortSength': isShortLength,
       },
     );
   }
@@ -49,13 +49,13 @@ class InstalledApps {
   static Future<AppInfo?> getAppInfo(String packageName) async {
     final appInfoJson = await _channel.invokeMapMethod<String, dynamic>(
       'getAppInfo',
-      {'package_name': packageName},
+      {'packageName': packageName},
     );
     return appInfoJson == null ? null : AppInfo.fromJson(appInfoJson);
   }
 
   static Future<bool?> isSystemApp(String packageName) => _channel.invokeMethod(
         'isSystemApp',
-        {'package_name': packageName},
+        {'packageName': packageName},
       );
 }
