@@ -46,16 +46,12 @@ class InstalledApps {
     );
   }
 
-  static Future<AppInfo> getAppInfo(String packageName) async {
-    var app = await _channel.invokeMethod(
+  static Future<AppInfo?> getAppInfo(String packageName) async {
+    var appInfoJson = await _channel.invokeMethod(
       "getAppInfo",
       {"package_name": packageName},
     );
-    if (app == null) {
-      throw ("App not found with provided package name $packageName");
-    } else {
-      return AppInfo.fromJson(app);
-    }
+    return appInfoJson == null ? null : AppInfo.fromJson(appInfoJson);
   }
 
   static Future<bool?> isSystemApp(String packageName) async {
