@@ -11,7 +11,7 @@ class InstalledApps {
     bool withIcon = false,
     String packageNamePrefix = "",
   ]) async {
-    List<dynamic> apps = await (_channel.invokeMethod(
+    List<dynamic> appsInfoJson = await (_channel.invokeMethod(
       'getInstalledApps',
       {
         "exclude_system_apps": excludeSystemApps,
@@ -19,7 +19,10 @@ class InstalledApps {
         "package_name_prefix": packageNamePrefix,
       },
     ));
-    return apps.map((app) => AppInfo.fromJson(app)).toList(growable: false);
+    return appsInfoJson
+        .map((appInfoJson) =>
+            AppInfo.fromJson(appInfoJson.cast<String, dynamic>()))
+        .toList(growable: false);
   }
 
   static Future<bool?> startApp(String packageName) async {
