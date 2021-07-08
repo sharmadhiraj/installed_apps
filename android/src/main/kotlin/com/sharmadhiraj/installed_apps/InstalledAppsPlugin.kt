@@ -61,13 +61,18 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         }
     }
 
-    private fun getInstalledApps(excludeSystemApps: Boolean, withIcon: Boolean, packageNamePrefix: String): List<Map<String, Any?>> {
+    private fun getInstalledApps(
+        excludeSystemApps: Boolean,
+        withIcon: Boolean,
+        packageNamePrefix: String
+    ): List<Map<String, Any?>> {
         val packageManager = getPackageManager(registrar)
         var installedApps = packageManager.getInstalledApplications(0)
         if (excludeSystemApps)
             installedApps = installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
         if (packageNamePrefix.isNotEmpty())
-            installedApps = installedApps.filter { app -> app.packageName.startsWith(packageNamePrefix.toLowerCase(ENGLISH)) }
+            installedApps =
+                installedApps.filter { app -> app.packageName.startsWith(packageNamePrefix.toLowerCase(ENGLISH)) }
         return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon) }
     }
 
@@ -101,10 +106,10 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
     }
 
     private fun getAppInfo(packageManager: PackageManager, packageName: String): Map<String, Any?>? {
-        var installedApps = packageManager.getInstalledApplications(0)
-        installedApps = installedApps.filter { app -> app.packageName == packageName }
-        return if (installedApps.isEmpty()) null
-        else convertAppToMap(packageManager, installedApps[0], true);
+        return try {
+            convertAppToMap(packageManager, packageManager.getApplicationInfo(packageName, 0), true);
+        } catch (e: PackageManager.NameNotFoundException) {
+            null;
+        }
     }
-
 }

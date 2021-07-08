@@ -18,7 +18,11 @@ class Util {
 
     companion object {
 
-        fun convertAppToMap(packageManager: PackageManager, app: ApplicationInfo, withIcon: Boolean): HashMap<String, Any?> {
+        fun convertAppToMap(
+            packageManager: PackageManager,
+            app: ApplicationInfo,
+            withIcon: Boolean
+        ): HashMap<String, Any?> {
             val map = HashMap<String, Any?>()
             map["name"] = packageManager.getApplicationLabel(app)
             map["package_name"] = app.packageName
