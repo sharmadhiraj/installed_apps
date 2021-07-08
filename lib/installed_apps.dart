@@ -9,7 +9,7 @@ class InstalledApps {
   static Future<List<AppInfo>> getInstalledApps({
     bool excludeSystemApps = true,
   }) async {
-    final appsInfoJson = (await _channel.invokeMethod<List<dynamic>>(
+    final appsInfoJson = (await _channel.invokeListMethod<Map>(
       'getInstalledApps',
       {
         'exclude_system_apps': excludeSystemApps,
@@ -17,7 +17,7 @@ class InstalledApps {
     ))!;
     return appsInfoJson
         .map((appInfoJson) =>
-            AppInfo.fromJson((appInfoJson as Map).cast<String, dynamic>()))
+            AppInfo.fromJson(appInfoJson.cast<String, dynamic>()))
         .toList(growable: false);
   }
 
@@ -47,13 +47,11 @@ class InstalledApps {
   }
 
   static Future<AppInfo?> getAppInfo(String packageName) async {
-    final appInfoJson = await _channel.invokeMethod(
+    final appInfoJson = await _channel.invokeMapMethod<String, dynamic>(
       'getAppInfo',
       {'package_name': packageName},
     );
-    return appInfoJson == null
-        ? null
-        : AppInfo.fromJson(appInfoJson as Map<String, dynamic>);
+    return appInfoJson == null ? null : AppInfo.fromJson(appInfoJson);
   }
 
   static Future<bool?> isSystemApp(String packageName) => _channel.invokeMethod(
