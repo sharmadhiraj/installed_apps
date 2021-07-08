@@ -19,10 +19,7 @@ class InstalledApps {
         "package_name_prefix": packageNamePrefix,
       },
     ));
-    List<AppInfo> appInfoList =
-        apps.map((app) => AppInfo.fromJson(app)).toList();
-    appInfoList.sort((a, b) => a.name.compareTo(b.name));
-    return appInfoList;
+    return apps.map((app) => AppInfo.fromJson(app)).toList();
   }
 
   static Future<bool?> startApp(String packageName) async {
