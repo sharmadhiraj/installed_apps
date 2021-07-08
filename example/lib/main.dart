@@ -129,14 +129,14 @@ class InstalledAppsScreen extends StatelessWidget {
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: Colors.transparent,
-                              child: Image.memory(app.icon!),
+                              child: Image.memory(app.icon),
                             ),
-                            title: Text(app.name!),
+                            title: Text(app.name),
                             subtitle: Text(app.getVersionInfo()),
                             onTap: () =>
-                                InstalledApps.startApp(app.packageName!),
+                                InstalledApps.startApp(app.packageName),
                             onLongPress: () =>
-                                InstalledApps.openSettings(app.packageName!),
+                                InstalledApps.openSettings(app.packageName),
                           ),
                         );
                       },
@@ -156,17 +156,18 @@ class AppInfoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("App Info")),
-      body: FutureBuilder<AppInfo>(
+      body: FutureBuilder<AppInfo?>(
         future: InstalledApps.getAppInfo("com.google.android.gm"),
-        builder: (BuildContext buildContext, AsyncSnapshot<AppInfo> snapshot) {
+        builder: (BuildContext buildContext, AsyncSnapshot<AppInfo?> snapshot) {
+          if (snapshot.hasError) throw snapshot.error!;
           return snapshot.connectionState == ConnectionState.done
               ? snapshot.hasData
                   ? Center(
                       child: Column(
                         children: [
-                          Image.memory(snapshot.data!.icon!),
+                          Image.memory(snapshot.data!.icon),
                           Text(
-                            snapshot.data!.name!,
+                            snapshot.data!.name,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 40,
