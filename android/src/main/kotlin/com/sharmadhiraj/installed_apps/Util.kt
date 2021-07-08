@@ -26,6 +26,7 @@ class Util {
             val packageInfo = packageManager.getPackageInfo(app.packageName, 0)
             map["version_name"] = packageInfo.versionName
             map["version_code"] = getVersionCode(packageInfo)
+            map["uid"] = app.uid
             return map
         }
 

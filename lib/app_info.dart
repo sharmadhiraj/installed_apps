@@ -6,6 +6,7 @@ class AppInfo {
   String? packageName;
   String? versionName;
   int? versionCode;
+  int? uid;
 
   AppInfo(
     this.name,
@@ -13,6 +14,7 @@ class AppInfo {
     this.packageName,
     this.versionName,
     this.versionCode,
+    this.uid,
   );
 
   factory AppInfo.create(dynamic data) {
@@ -22,6 +24,7 @@ class AppInfo {
       data["package_name"],
       data["version_name"],
       data["version_code"],
+      data["uid"],
     );
   }
 
