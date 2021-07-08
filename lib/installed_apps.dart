@@ -19,7 +19,7 @@ class InstalledApps {
         "package_name_prefix": packageNamePrefix,
       },
     ));
-    return apps.map((app) => AppInfo.fromJson(app)).toList();
+    return apps.map((app) => AppInfo.fromJson(app)).toList(growable: false);
   }
 
   static Future<bool?> startApp(String packageName) async {
