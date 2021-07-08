@@ -35,20 +35,26 @@ class Util {
         }
 
         private fun drawableToByteArray(drawable: Drawable): ByteArray {
-            val bitmap = drawableToBitmap(drawable)
+            val bitmap = drawable.toBitmap()
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
             return stream.toByteArray()
         }
 
-        private fun drawableToBitmap(drawable: Drawable): Bitmap {
-            if (SDK_INT <= N_MR1) return (drawable as BitmapDrawable).bitmap
-            val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
-            drawable.setBounds(0, 0, canvas.width, canvas.height)
-            drawable.draw(canvas)
-            return bitmap
-        }
+        private fun Drawable.toBitmap() =
+            if (this is BitmapDrawable && bitmap != null) {
+                bitmap
+            } else {
+                if (intrinsicWidth <= 0 || intrinsicHeight <= 0) {
+                    Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+                } else {
+                    Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+                }.also { bitmap ->
+                    val canvas = Canvas(bitmap)
+                    setBounds(0, 0, canvas.width, canvas.height)
+                    draw(canvas)
+                }
+            }
 
         fun getContext(registrar: PluginRegistry.Registrar): Context {
             return registrar.context()
