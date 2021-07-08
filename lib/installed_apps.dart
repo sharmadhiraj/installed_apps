@@ -9,14 +9,14 @@ class InstalledApps {
   static Future<List<AppInfo>> getInstalledApps([
     bool excludeSystemApps = true,
     bool withIcon = false,
-    String packageNamePrefix = "",
+    String packageNamePrefix = '',
   ]) async {
     List<dynamic> appsInfoJson = await (_channel.invokeMethod(
       'getInstalledApps',
       {
-        "exclude_system_apps": excludeSystemApps,
-        "with_icon": withIcon,
-        "package_name_prefix": packageNamePrefix,
+        'exclude_system_apps': excludeSystemApps,
+        'with_icon': withIcon,
+        'package_name_prefix': packageNamePrefix,
       },
     ));
     return appsInfoJson
@@ -27,40 +27,40 @@ class InstalledApps {
 
   static Future<bool?> startApp(String packageName) async {
     return _channel.invokeMethod(
-      "startApp",
-      {"package_name": packageName},
+      'startApp',
+      {'package_name': packageName},
     );
   }
 
   static openSettings(String packageName) {
     _channel.invokeMethod(
-      "openSettings",
-      {"package_name": packageName},
+      'openSettings',
+      {'package_name': packageName},
     );
   }
 
   static toast(String message, bool isShortLength) {
     _channel.invokeMethod(
-      "toast",
+      'toast',
       {
-        "message": message,
-        "short_length": isShortLength,
+        'message': message,
+        'short_length': isShortLength,
       },
     );
   }
 
   static Future<AppInfo?> getAppInfo(String packageName) async {
     var appInfoJson = await _channel.invokeMethod(
-      "getAppInfo",
-      {"package_name": packageName},
+      'getAppInfo',
+      {'package_name': packageName},
     );
     return appInfoJson == null ? null : AppInfo.fromJson(appInfoJson);
   }
 
   static Future<bool?> isSystemApp(String packageName) async {
     return _channel.invokeMethod(
-      "isSystemApp",
-      {"package_name": packageName},
+      'isSystemApp',
+      {'package_name': packageName},
     );
   }
 }
