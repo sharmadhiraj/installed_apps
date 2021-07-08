@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 class AppInfo {
   final String name;
-  final Uint8List icon;
+  final Uint8List? icon;
   final String packageName;
   final String versionName;
   final int versionCode;
