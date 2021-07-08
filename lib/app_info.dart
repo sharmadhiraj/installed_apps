@@ -1,34 +1,38 @@
 import 'dart:typed_data';
 
 class AppInfo {
-  String? name;
-  Uint8List? icon;
-  String? packageName;
-  String? versionName;
-  int? versionCode;
-  int? uid;
+  final String name;
+  final Uint8List icon;
+  final String packageName;
+  final String versionName;
+  final int versionCode;
+  final int uid;
 
-  AppInfo(
-    this.name,
-    this.icon,
-    this.packageName,
-    this.versionName,
-    this.versionCode,
-    this.uid,
-  );
+  const AppInfo({
+    required this.name,
+    required this.icon,
+    required this.packageName,
+    required this.versionName,
+    required this.versionCode,
+    required this.uid,
+  });
 
-  factory AppInfo.create(dynamic data) {
-    return AppInfo(
-      data["name"],
-      data["icon"],
-      data["package_name"],
-      data["version_name"],
-      data["version_code"],
-      data["uid"],
-    );
-  }
+  AppInfo.fromJson(Map<String, dynamic> json)
+      : this(
+          name: json['name'],
+          icon: json['icon'],
+          packageName: json['packageName'],
+          versionName: json['versionName'],
+          versionCode: json['versionCode'],
+          uid: json['uid'],
+        );
 
-  String getVersionInfo() {
-    return "$versionName ($versionCode)";
-  }
+  @Deprecated('Use `versionInfo` instead. Will be removed in the next version.')
+  String getVersionInfo() => versionInfo;
+
+  String get versionInfo => '$versionName ($versionCode)';
+
+  @override
+  String toString() =>
+      'AppInfo{name: $name, icon: <byte list>, packageName: $packageName, versionName: $versionName, versionCode: $versionCode, uid: $uid}';
 }

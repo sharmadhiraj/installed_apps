@@ -19,8 +19,9 @@ class InstalledApps {
         "package_name_prefix": packageNamePrefix,
       },
     ));
-    List<AppInfo> appInfoList = apps.map((app) => AppInfo.create(app)).toList();
-    appInfoList.sort((a, b) => a.name!.compareTo(b.name!));
+    List<AppInfo> appInfoList =
+        apps.map((app) => AppInfo.fromJson(app)).toList();
+    appInfoList.sort((a, b) => a.name.compareTo(b.name));
     return appInfoList;
   }
 
@@ -56,7 +57,7 @@ class InstalledApps {
     if (app == null) {
       throw ("App not found with provided package name $packageName");
     } else {
-      return AppInfo.create(app);
+      return AppInfo.fromJson(app);
     }
   }
 
