@@ -19,12 +19,12 @@ class AppInfo {
 
   AppInfo.fromJson(Map<String, dynamic> json)
       : this(
-          name: json['name'],
-          icon: json['icon'],
-          packageName: json['packageName'],
-          versionName: json['versionName'],
-          versionCode: json['versionCode'],
-          uid: json['uid'],
+          name: json['name'] as String,
+          icon: json['icon'] as Uint8List?,
+          packageName: json['packageName'] as String,
+          versionName: json['versionName'] as String,
+          versionCode: json['versionCode'] as int,
+          uid: json['uid'] as int,
         );
 
   @Deprecated('Use `versionInfo` instead. Will be removed in the next version.')
