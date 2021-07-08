@@ -25,11 +25,11 @@ class Util {
         ): HashMap<String, Any?> {
             val map = HashMap<String, Any?>()
             map["name"] = packageManager.getApplicationLabel(app)
-            map["package_name"] = app.packageName
+            map["packageName"] = app.packageName
             map["icon"] = if (withIcon) drawableToByteArray(app.loadIcon(packageManager)) else ByteArray(0)
             val packageInfo = packageManager.getPackageInfo(app.packageName, 0)
-            map["version_name"] = packageInfo.versionName
-            map["version_code"] = getVersionCode(packageInfo)
+            map["versionName"] = packageInfo.versionName
+            map["versionCode"] = getVersionCode(packageInfo)
             map["uid"] = app.uid
             return map
         }
