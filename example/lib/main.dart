@@ -153,7 +153,7 @@ class _InstalledAppsScreenState extends State<InstalledAppsScreen> {
                                 // child: Image.memory(app.icon!),
                                 ),
                             title: Text(app.name),
-                            subtitle: Text(app.getVersionInfo()),
+                            subtitle: Text(app.versionInfo),
                             onTap: () => startApp(app.packageName),
                             onLongPress: () => openAppSettings(app.packageName),
                           ),
@@ -191,7 +191,7 @@ class AppInfoScreen extends StatelessWidget {
                               fontSize: 40,
                             ),
                           ),
-                          Text(snapshot.data!.getVersionInfo())
+                          Text(snapshot.data!.versionInfo)
                         ],
                       ),
                     )
