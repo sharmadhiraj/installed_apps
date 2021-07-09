@@ -32,6 +32,20 @@ class Util {
             return map
         }
 
+        fun getAppIconPng(packageManager: PackageManager, packageName: String) =
+            try {
+                drawableToByteArray(packageManager.getApplicationIcon(packageName))
+            } catch (e: PackageManager.NameNotFoundException) {
+                null
+            }
+
+        fun getAppIconsPng(packageManager: PackageManager, packageNames: List<String>) =
+            try {
+                packageNames.map { drawableToByteArray(packageManager.getApplicationIcon(it)) }
+            } catch (e: PackageManager.NameNotFoundException) {
+                null
+            }
+
         private fun drawableToByteArray(drawable: Drawable): ByteArray {
             val bitmap = drawable.toBitmap()
             val stream = ByteArrayOutputStream()
@@ -67,7 +81,6 @@ class Util {
             return if (SDK_INT < P) packageInfo.versionCode.toLong()
             else packageInfo.longVersionCode
         }
-
     }
 
 }

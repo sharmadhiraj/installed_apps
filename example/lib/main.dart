@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:installed_apps/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
@@ -111,13 +113,24 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class InstalledAppsScreen extends StatelessWidget {
+class InstalledAppsScreen extends StatefulWidget {
+  @override
+  State<InstalledAppsScreen> createState() => _InstalledAppsScreenState();
+}
+
+class _InstalledAppsScreenState extends State<InstalledAppsScreen> {
+  late final _installedApps = InstalledApps.getInstalledApps();
+  late final _icons = _installedApps.then((installedApps) =>
+      InstalledApps.getAppIconsPng(installedApps
+          .map((appInfo) => appInfo.packageName)
+          .toList(growable: false)));
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Installed Apps")),
       body: FutureBuilder<List<AppInfo>>(
-        future: InstalledApps.getInstalledApps(),
+        future: _installedApps,
         builder:
             (BuildContext buildContext, AsyncSnapshot<List<AppInfo>> snapshot) {
           return snapshot.connectionState == ConnectionState.done
@@ -129,9 +142,18 @@ class InstalledAppsScreen extends StatelessWidget {
                         return Card(
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: Colors.transparent,
-                              // child: Image.memory(app.icon!),
-                            ),
+                                backgroundColor: Colors.transparent,
+                                child: FutureBuilder<List<Uint8List?>>(
+                                  future: _icons,
+                                  builder: (context, snapshot) {
+                                    if (!snapshot.hasData) {
+                                      return const SizedBox();
+                                    }
+                                    return Image.memory(snapshot.data![index]!);
+                                  },
+                                )
+                                // child: Image.memory(app.icon!),
+                                ),
                             title: Text(app.name),
                             subtitle: Text(app.getVersionInfo()),
                             onTap: () =>

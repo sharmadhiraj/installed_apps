@@ -4,11 +4,15 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
 import com.sharmadhiraj.installed_apps.Util.Companion.convertAppToMap
+import com.sharmadhiraj.installed_apps.Util.Companion.getAppIconPng
+import com.sharmadhiraj.installed_apps.Util.Companion.getAppIconsPng
 import com.sharmadhiraj.installed_apps.Util.Companion.getContext
 import com.sharmadhiraj.installed_apps.Util.Companion.getPackageManager
 import io.flutter.plugin.common.MethodCall
@@ -16,7 +20,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import java.util.Locale.ENGLISH
 
 class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler {
 
@@ -32,7 +35,10 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         when (call.method) {
             "getInstalledApps" -> {
                 val includeSystemApps = call.argument("excludeSystemApps") ?: true
-                result.success(getInstalledApps(includeSystemApps))
+                Thread {
+                    val appsInfo = getInstalledApps(includeSystemApps)
+                    Handler(Looper.getMainLooper()).post { result.success(appsInfo) }
+                }.start()
             }
             "startApp" -> {
                 val packageName: String? = call.argument("packageName")
@@ -49,11 +55,31 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
             }
             "getAppInfo" -> {
                 val packageName: String = call.argument("packageName") ?: ""
-                result.success(getAppInfo(getPackageManager(registrar), packageName))
+                Thread {
+                    val appInfo = getAppInfo(getPackageManager(registrar), packageName)
+                    Handler(Looper.getMainLooper()).post { result.success(appInfo) }
+                }.start()
             }
             "isSystemApp" -> {
                 val packageName: String = call.argument("packageName") ?: ""
-                result.success(isSystemApp(getPackageManager(registrar), packageName))
+                Thread {
+                    val isSystemApp = isSystemApp(getPackageManager(registrar), packageName)
+                    Handler(Looper.getMainLooper()).post { result.success(isSystemApp) }
+                }.start()
+            }
+            "getAppIconPng" -> {
+                val packageName: String = call.argument("packageName") ?: ""
+                Thread {
+                    val icon = getAppIconPng(getPackageManager(registrar), packageName)
+                    Handler(Looper.getMainLooper()).post { result.success(icon) }
+                }.start()
+            }
+            "getAppIconsPng" -> {
+                val packageNames: List<String> = call.argument("packageNames") ?: emptyList<String>()
+                Thread {
+                    val icons = getAppIconsPng(getPackageManager(registrar), packageNames)
+                    Handler(Looper.getMainLooper()).post { result.success(icons) }
+                }.start()
             }
             else -> result.notImplemented()
         }

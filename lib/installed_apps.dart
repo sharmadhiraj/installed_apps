@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:installed_apps/app_info.dart';
@@ -58,4 +59,12 @@ class InstalledApps {
         'isSystemApp',
         {'packageName': packageName},
       );
+
+  static Future<Uint8List?> getAppIconPng(String packageName) =>
+      _channel.invokeMethod('getAppIconPng', {'packageName': packageName});
+
+  static Future<List<Uint8List?>> getAppIconsPng(
+          List<String> packageNames) async =>
+      (await _channel.invokeListMethod<Uint8List?>(
+          'getAppIconsPng', {'packageNames': packageNames}))!;
 }
