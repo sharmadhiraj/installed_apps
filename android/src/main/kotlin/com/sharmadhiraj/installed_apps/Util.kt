@@ -18,32 +18,55 @@ class Util {
 
     companion object {
 
-        fun convertAppToMap(packageManager: PackageManager, app: ApplicationInfo, withIcon: Boolean): HashMap<String, Any?> {
+        fun convertAppToMap(
+            packageManager: PackageManager,
+            app: ApplicationInfo,
+        ): HashMap<String, Any?> {
             val map = HashMap<String, Any?>()
             map["name"] = packageManager.getApplicationLabel(app)
-            map["package_name"] = app.packageName
-            map["icon"] = if (withIcon) drawableToByteArray(app.loadIcon(packageManager)) else ByteArray(0)
+            map["packageName"] = app.packageName
             val packageInfo = packageManager.getPackageInfo(app.packageName, 0)
-            map["version_name"] = packageInfo.versionName
-            map["version_code"] = getVersionCode(packageInfo)
+            map["versionName"] = packageInfo.versionName
+            map["versionCode"] = getVersionCode(packageInfo)
+            map["uid"] = app.uid
             return map
         }
 
+        fun getAppIconPng(packageManager: PackageManager, packageName: String) =
+            try {
+                drawableToByteArray(packageManager.getApplicationIcon(packageName))
+            } catch (e: PackageManager.NameNotFoundException) {
+                null
+            }
+
+        fun getAppIconsPng(packageManager: PackageManager, packageNames: List<String>) =
+            try {
+                packageNames.map { drawableToByteArray(packageManager.getApplicationIcon(it)) }
+            } catch (e: PackageManager.NameNotFoundException) {
+                null
+            }
+
         private fun drawableToByteArray(drawable: Drawable): ByteArray {
-            val bitmap = drawableToBitmap(drawable)
+            val bitmap = drawable.toBitmap()
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
             return stream.toByteArray()
         }
 
-        private fun drawableToBitmap(drawable: Drawable): Bitmap {
-            if (SDK_INT <= N_MR1) return (drawable as BitmapDrawable).bitmap
-            val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
-            drawable.setBounds(0, 0, canvas.width, canvas.height)
-            drawable.draw(canvas)
-            return bitmap
-        }
+        private fun Drawable.toBitmap() =
+            if (this is BitmapDrawable && bitmap != null) {
+                bitmap
+            } else {
+                if (intrinsicWidth <= 0 || intrinsicHeight <= 0) {
+                    Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+                } else {
+                    Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+                }.also { bitmap ->
+                    val canvas = Canvas(bitmap)
+                    setBounds(0, 0, canvas.width, canvas.height)
+                    draw(canvas)
+                }
+            }
 
         fun getContext(registrar: PluginRegistry.Registrar): Context {
             return registrar.context()
@@ -58,7 +81,6 @@ class Util {
             return if (SDK_INT < P) packageInfo.versionCode.toLong()
             else packageInfo.longVersionCode
         }
-
     }
 
 }

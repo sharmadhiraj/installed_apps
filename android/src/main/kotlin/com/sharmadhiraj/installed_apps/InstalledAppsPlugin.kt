@@ -4,11 +4,15 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
 import com.sharmadhiraj.installed_apps.Util.Companion.convertAppToMap
+import com.sharmadhiraj.installed_apps.Util.Companion.getAppIconPng
+import com.sharmadhiraj.installed_apps.Util.Companion.getAppIconsPng
 import com.sharmadhiraj.installed_apps.Util.Companion.getContext
 import com.sharmadhiraj.installed_apps.Util.Companion.getPackageManager
 import io.flutter.plugin.common.MethodCall
@@ -16,7 +20,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import java.util.Locale.ENGLISH
 
 class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler {
 
@@ -31,44 +34,58 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "getInstalledApps" -> {
-                val includeSystemApps = call.argument("exclude_system_apps") ?: true
-                val withIcon = call.argument("with_icon") ?: false
-                val packageNamePrefix: String = call.argument("package_name_prefix") ?: ""
-                result.success(getInstalledApps(includeSystemApps, withIcon, packageNamePrefix))
+                val includeSystemApps = call.argument("excludeSystemApps") ?: true
+                Thread {
+                    val appsInfo = getInstalledApps(includeSystemApps)
+                    Handler(Looper.getMainLooper()).post { result.success(appsInfo) }
+                }.start()
             }
             "startApp" -> {
-                val packageName: String? = call.argument("package_name")
+                val packageName: String? = call.argument("packageName")
                 result.success(startApp(packageName))
             }
             "openSettings" -> {
-                val packageName: String? = call.argument("package_name")
+                val packageName: String? = call.argument("packageName")
                 openSettings(packageName)
             }
-            "toast" -> {
-                val message = call.argument("message") ?: ""
-                val short = call.argument("short_length") ?: true
-                toast(message, short);
-            }
             "getAppInfo" -> {
-                val packageName: String = call.argument("package_name") ?: ""
-                result.success(getAppInfo(getPackageManager(registrar), packageName))
+                val packageName: String = call.argument("packageName") ?: ""
+                Thread {
+                    val appInfo = getAppInfo(getPackageManager(registrar), packageName)
+                    Handler(Looper.getMainLooper()).post { result.success(appInfo) }
+                }.start()
             }
             "isSystemApp" -> {
-                val packageName: String = call.argument("package_name") ?: ""
-                result.success(isSystemApp(getPackageManager(registrar), packageName))
+                val packageName: String = call.argument("packageName") ?: ""
+                Thread {
+                    val isSystemApp = isSystemApp(getPackageManager(registrar), packageName)
+                    Handler(Looper.getMainLooper()).post { result.success(isSystemApp) }
+                }.start()
+            }
+            "getAppIconPng" -> {
+                val packageName: String = call.argument("packageName") ?: ""
+                Thread {
+                    val icon = getAppIconPng(getPackageManager(registrar), packageName)
+                    Handler(Looper.getMainLooper()).post { result.success(icon) }
+                }.start()
+            }
+            "getAppIconsPng" -> {
+                val packageNames: List<String> = call.argument("packageNames") ?: emptyList<String>()
+                Thread {
+                    val icons = getAppIconsPng(getPackageManager(registrar), packageNames)
+                    Handler(Looper.getMainLooper()).post { result.success(icons) }
+                }.start()
             }
             else -> result.notImplemented()
         }
     }
 
-    private fun getInstalledApps(excludeSystemApps: Boolean, withIcon: Boolean, packageNamePrefix: String): List<Map<String, Any?>> {
+    private fun getInstalledApps(excludeSystemApps: Boolean): List<Map<String, Any?>> {
         val packageManager = getPackageManager(registrar)
-        var installedApps = packageManager.getInstalledApplications(0)
-        if (excludeSystemApps)
-            installedApps = installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
-        if (packageNamePrefix.isNotEmpty())
-            installedApps = installedApps.filter { app -> app.packageName.startsWith(packageNamePrefix.toLowerCase(ENGLISH)) }
-        return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon) }
+        return packageManager.getInstalledApplications(0).run {
+            if (excludeSystemApps) filterNot { isSystemApp(packageManager, it.packageName) }
+            else this
+        }.map { convertAppToMap(packageManager, it) }
     }
 
     private fun startApp(packageName: String?): Boolean {
@@ -83,13 +100,8 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         }
     }
 
-    private fun toast(text: String, short: Boolean) {
-        Toast.makeText(getContext(registrar), text, if (short) LENGTH_SHORT else LENGTH_LONG).show()
-    }
-
-    private fun isSystemApp(packageManager: PackageManager, packageName: String): Boolean {
-        return packageManager.getLaunchIntentForPackage(packageName) == null
-    }
+    private fun isSystemApp(packageManager: PackageManager, packageName: String) =
+        packageManager.getLaunchIntentForPackage(packageName) == null
 
     private fun openSettings(packageName: String?) {
         val intent = Intent()
@@ -100,11 +112,10 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         getContext(registrar).startActivity(intent)
     }
 
-    private fun getAppInfo(packageManager: PackageManager, packageName: String): Map<String, Any?>? {
-        var installedApps = packageManager.getInstalledApplications(0)
-        installedApps = installedApps.filter { app -> app.packageName == packageName }
-        return if (installedApps.isEmpty()) null
-        else convertAppToMap(packageManager, installedApps[0], true);
-    }
-
+    private fun getAppInfo(packageManager: PackageManager, packageName: String) =
+        try {
+            convertAppToMap(packageManager, packageManager.getApplicationInfo(packageName, 0));
+        } catch (e: PackageManager.NameNotFoundException) {
+            null;
+        }
 }

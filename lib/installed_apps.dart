@@ -1,69 +1,54 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:installed_apps/app_info.dart';
 
-class InstalledApps {
-  static const MethodChannel _channel = const MethodChannel('installed_apps');
+const MethodChannel _channel = MethodChannel('installed_apps');
 
-  static Future<List<AppInfo>> getInstalledApps([
-    bool excludeSystemApps = true,
-    bool withIcon = false,
-    String packageNamePrefix = "",
-  ]) async {
-    List<dynamic> apps = await (_channel.invokeMethod(
-      'getInstalledApps',
-      {
-        "exclude_system_apps": excludeSystemApps,
-        "with_icon": withIcon,
-        "package_name_prefix": packageNamePrefix,
-      },
-    ));
-    List<AppInfo> appInfoList = apps.map((app) => AppInfo.create(app)).toList();
-    appInfoList.sort((a, b) => a.name!.compareTo(b.name!));
-    return appInfoList;
-  }
-
-  static Future<bool?> startApp(String packageName) async {
-    return _channel.invokeMethod(
-      "startApp",
-      {"package_name": packageName},
-    );
-  }
-
-  static openSettings(String packageName) {
-    _channel.invokeMethod(
-      "openSettings",
-      {"package_name": packageName},
-    );
-  }
-
-  static toast(String message, bool isShortLength) {
-    _channel.invokeMethod(
-      "toast",
-      {
-        "message": message,
-        "short_length": isShortLength,
-      },
-    );
-  }
-
-  static Future<AppInfo> getAppInfo(String packageName) async {
-    var app = await _channel.invokeMethod(
-      "getAppInfo",
-      {"package_name": packageName},
-    );
-    if (app == null) {
-      throw ("App not found with provided package name $packageName");
-    } else {
-      return AppInfo.create(app);
-    }
-  }
-
-  static Future<bool?> isSystemApp(String packageName) async {
-    return _channel.invokeMethod(
-      "isSystemApp",
-      {"package_name": packageName},
-    );
-  }
+Future<List<AppInfo>> getInstalledApps({
+  bool excludeSystemApps = true,
+}) async {
+  final appsInfoJson = (await _channel.invokeListMethod<Map>(
+    'getInstalledApps',
+    {
+      'excludeSystemApps': excludeSystemApps,
+    },
+  ))!;
+  return appsInfoJson
+      .map((appInfoJson) =>
+          AppInfo.fromJson(appInfoJson.cast<String, dynamic>()))
+      .toList(growable: false);
 }
+
+Future<bool?> startApp(String packageName) => _channel.invokeMethod(
+      'startApp',
+      {'packageName': packageName},
+    );
+
+Future<void> openAppSettings(String packageName) async {
+  await _channel.invokeMethod(
+    'openSettings',
+    {'packageName': packageName},
+  );
+}
+
+Future<AppInfo?> getAppInfo(String packageName) async {
+  final appInfoJson = await _channel.invokeMapMethod<String, dynamic>(
+    'getAppInfo',
+    {'packageName': packageName},
+  );
+  return appInfoJson == null ? null : AppInfo.fromJson(appInfoJson);
+}
+
+Future<bool?> isSystemApp(String packageName) => _channel.invokeMethod(
+      'isSystemApp',
+      {'packageName': packageName},
+    );
+
+Future<Uint8List?> getAppIconPng(String packageName) =>
+    _channel.invokeMethod('getAppIconPng', {'packageName': packageName});
+
+Future<List<Uint8List?>> getAppIconsPng(List<String> packageNames) async =>
+    (await _channel.invokeListMethod<Uint8List?>(
+        'getAppIconsPng', {'packageNames': packageNames}))!;
