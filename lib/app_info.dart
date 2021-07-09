@@ -22,9 +22,6 @@ class AppInfo {
           uid: json['uid'] as int,
         );
 
-  @Deprecated('Use `versionInfo` instead. Will be removed in the next version.')
-  String getVersionInfo() => versionInfo;
-
   String get versionInfo => '$versionName ($versionCode)';
 
   @override
