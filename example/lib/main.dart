@@ -100,7 +100,7 @@ class HomeScreen extends StatelessWidget {
         return AlertDialog(
           content: Text(text),
           actions: <Widget>[
-            FlatButton(
+            TextButton(
               child: const Text("Close"),
               onPressed: () => Navigator.of(context).pop(),
             ),
