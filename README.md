@@ -10,25 +10,25 @@ Flutter <a href="https://pub.dev/packages/installed_apps" target="_blank">plugin
 
 #### Get list of installed apps 
 ```
-List<AppInfo> apps = await InstalledApps.getInstalledApps(bool excludeSystemApps, bool withIcon, String packageNamePrefix);
+List<AppInfo> apps = await getInstalledApps(excludeSystemApps: false);
 ```
 *Use packageNamePrefix to filter for apps that have package name starting with certain prefix.
 
 #### Get app info with package name 
 ```
-AppInfo app = await InstalledApps.getAppInfo(String packageName);
+AppInfo app = await getAppInfo(packageName);
 ```
 
 #### Start app with package name
 ```
-InstalledApps.startApp(String packageName)
+await startApp(packageName)
 ```
 #### Open app settings screen (App Info) with package name
 ```
-InstalledApps.openSettings(String packageName)
+await openSettings(packageName)
 ```
 #### Check if app is system app
 ```
-bool isSystemApp = await InstalledApps.isSystemApp(String packageName)
+bool isSystemApp = await isSystemApp(packageName)
 ```
 
