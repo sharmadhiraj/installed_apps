@@ -33,19 +33,6 @@ Future<void> openAppSettings(String packageName) async {
   );
 }
 
-Future<void> toast(
-  String message, {
-  required bool isShortLength,
-}) async {
-  await _channel.invokeMethod(
-    'toast',
-    {
-      'message': message,
-      'shortSength': isShortLength,
-    },
-  );
-}
-
 Future<AppInfo?> getAppInfo(String packageName) async {
   final appInfoJson = await _channel.invokeMapMethod<String, dynamic>(
     'getAppInfo',

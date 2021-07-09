@@ -48,11 +48,6 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
                 val packageName: String? = call.argument("packageName")
                 openSettings(packageName)
             }
-            "toast" -> {
-                val message = call.argument("message") ?: ""
-                val short = call.argument("shortLength") ?: true
-                toast(message, short);
-            }
             "getAppInfo" -> {
                 val packageName: String = call.argument("packageName") ?: ""
                 Thread {
@@ -103,10 +98,6 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
             print(e)
             false
         }
-    }
-
-    private fun toast(text: String, short: Boolean) {
-        Toast.makeText(getContext(registrar), text, if (short) LENGTH_SHORT else LENGTH_LONG).show()
     }
 
     private fun isSystemApp(packageManager: PackageManager, packageName: String) =
