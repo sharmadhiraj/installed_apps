@@ -56,7 +56,7 @@ class HomeScreen extends StatelessWidget {
                 title: const Text("Start App"),
                 subtitle: const Text(
                     "Start app with package name. Get callback of success or failure."),
-                onTap: () => InstalledApps.startApp("com.google.android.gm"),
+                onTap: () => startApp("com.google.android.gm"),
               ),
             ),
           ),
@@ -67,8 +67,7 @@ class HomeScreen extends StatelessWidget {
                 title: const Text("Go To App Settings Screen"),
                 subtitle: const Text(
                     "Directly navigate to app settings screen with package name"),
-                onTap: () =>
-                    InstalledApps.openSettings("com.google.android.gm"),
+                onTap: () => openAppSettings("com.google.android.gm"),
               ),
             ),
           ),
@@ -79,8 +78,7 @@ class HomeScreen extends StatelessWidget {
                 title: const Text("Check If System App"),
                 subtitle:
                     const Text("Check if app is system app with package name"),
-                onTap: () =>
-                    InstalledApps.isSystemApp("com.google.android.gm").then(
+                onTap: () => isSystemApp("com.google.android.gm").then(
                   (bool? value) => _showDialog(
                       context,
                       value ?? false
@@ -119,9 +117,9 @@ class InstalledAppsScreen extends StatefulWidget {
 }
 
 class _InstalledAppsScreenState extends State<InstalledAppsScreen> {
-  late final _installedApps = InstalledApps.getInstalledApps();
-  late final _icons = _installedApps.then((installedApps) =>
-      InstalledApps.getAppIconsPng(installedApps
+  late final _installedApps = getInstalledApps();
+  late final _icons = _installedApps.then((installedApps) => getAppIconsPng(
+      installedApps
           .map((appInfo) => appInfo.packageName)
           .toList(growable: false)));
 
@@ -156,10 +154,8 @@ class _InstalledAppsScreenState extends State<InstalledAppsScreen> {
                                 ),
                             title: Text(app.name),
                             subtitle: Text(app.getVersionInfo()),
-                            onTap: () =>
-                                InstalledApps.startApp(app.packageName),
-                            onLongPress: () =>
-                                InstalledApps.openSettings(app.packageName),
+                            onTap: () => startApp(app.packageName),
+                            onLongPress: () => openAppSettings(app.packageName),
                           ),
                         );
                       },
@@ -180,7 +176,7 @@ class AppInfoScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("App Info")),
       body: FutureBuilder<AppInfo?>(
-        future: InstalledApps.getAppInfo("com.google.android.gm"),
+        future: getAppInfo("com.google.android.gm"),
         builder: (BuildContext buildContext, AsyncSnapshot<AppInfo?> snapshot) {
           return snapshot.connectionState == ConnectionState.done
               ? snapshot.hasData
