@@ -4,9 +4,10 @@ Flutter <a href="https://pub.dev/packages/installed_apps" target="_blank">plugin
 (Currently only Android is supported.)
 
 ## Getting Started
-1. <a href="https://pub.dev/packages/installed_apps/install" target="_blank">Installation Guide</a>
-2. <a href="https://pub.dev/packages/installed_apps/example" target="_blank">Example</a>
-<hr/>
+1. [Installation Guide](https://pub.dev/packages/installed_apps/install)
+2. [Example](https://pub.dev/packages/installed_apps/example)
+
+---
 
 #### Get list of installed apps 
 ```dart
