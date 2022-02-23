@@ -1,3 +1,7 @@
+## 1.3.0
+* Android V2 embedding migration
+* Fix UI freeze issue during getting instgalled apps
+
 ## 1.2.0
 * Null Safety migration
 
