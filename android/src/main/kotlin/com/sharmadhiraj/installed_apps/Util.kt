@@ -11,18 +11,22 @@ import android.graphics.drawable.Drawable
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.N_MR1
 import android.os.Build.VERSION_CODES.P
-import io.flutter.plugin.common.PluginRegistry
 import java.io.ByteArrayOutputStream
 
 class Util {
 
     companion object {
 
-        fun convertAppToMap(packageManager: PackageManager, app: ApplicationInfo, withIcon: Boolean): HashMap<String, Any?> {
+        fun convertAppToMap(
+            packageManager: PackageManager,
+            app: ApplicationInfo,
+            withIcon: Boolean
+        ): HashMap<String, Any?> {
             val map = HashMap<String, Any?>()
             map["name"] = packageManager.getApplicationLabel(app)
             map["package_name"] = app.packageName
-            map["icon"] = if (withIcon) drawableToByteArray(app.loadIcon(packageManager)) else ByteArray(0)
+            map["icon"] =
+                if (withIcon) drawableToByteArray(app.loadIcon(packageManager)) else ByteArray(0)
             val packageInfo = packageManager.getPackageInfo(app.packageName, 0)
             map["version_name"] = packageInfo.versionName
             map["version_code"] = getVersionCode(packageInfo)
@@ -38,19 +42,19 @@ class Util {
 
         private fun drawableToBitmap(drawable: Drawable): Bitmap {
             if (SDK_INT <= N_MR1) return (drawable as BitmapDrawable).bitmap
-            val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val bitmap = Bitmap.createBitmap(
+                drawable.intrinsicWidth,
+                drawable.intrinsicHeight,
+                Bitmap.Config.ARGB_8888
+            )
             val canvas = Canvas(bitmap)
             drawable.setBounds(0, 0, canvas.width, canvas.height)
             drawable.draw(canvas)
             return bitmap
         }
 
-        fun getContext(registrar: PluginRegistry.Registrar): Context {
-            return registrar.context()
-        }
-
-        fun getPackageManager(registrar: PluginRegistry.Registrar): PackageManager {
-            return getContext(registrar).packageManager
+        fun getPackageManager(context: Context): PackageManager {
+            return context.packageManager
         }
 
         @Suppress("DEPRECATION")

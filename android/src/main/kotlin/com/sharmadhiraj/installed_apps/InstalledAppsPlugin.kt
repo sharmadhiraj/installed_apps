@@ -1,5 +1,6 @@
 package com.sharmadhiraj.installed_apps
 
+import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
@@ -9,32 +10,71 @@ import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
 import com.sharmadhiraj.installed_apps.Util.Companion.convertAppToMap
-import com.sharmadhiraj.installed_apps.Util.Companion.getContext
 import com.sharmadhiraj.installed_apps.Util.Companion.getPackageManager
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.util.Locale.ENGLISH
 
-class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler {
+
+class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
     companion object {
+
+        var context: Context? = null
+
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "installed_apps")
-            channel.setMethodCallHandler(InstalledAppsPlugin(registrar))
+            context = registrar.context()
+            register(registrar.messenger())
+        }
+
+        @JvmStatic
+        fun register(messenger: BinaryMessenger?) {
+            val channel = MethodChannel(messenger, "installed_apps")
+            channel.setMethodCallHandler(InstalledAppsPlugin())
         }
     }
 
-    override fun onMethodCall(call: MethodCall, result: Result) {
+    override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        InstalledAppsPlugin.register(binding.getBinaryMessenger())
+    }
+
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    }
+
+    override fun onAttachedToActivity(activityPluginBinding: ActivityPluginBinding) {
+        context = activityPluginBinding.getActivity()
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {}
+
+    override fun onReattachedToActivityForConfigChanges(activityPluginBinding: ActivityPluginBinding) {
+        context = activityPluginBinding.getActivity()
+    }
+
+    override fun onDetachedFromActivity() {}
+
+    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+        if (context == null) {
+            result.error("", "Something went wrong!", null)
+            return
+        }
         when (call.method) {
             "getInstalledApps" -> {
                 val includeSystemApps = call.argument("exclude_system_apps") ?: true
                 val withIcon = call.argument("with_icon") ?: false
                 val packageNamePrefix: String = call.argument("package_name_prefix") ?: ""
-                result.success(getInstalledApps(includeSystemApps, withIcon, packageNamePrefix))
+                Thread {
+                    val apps: List<Map<String, Any?>> =
+                        getInstalledApps(includeSystemApps, withIcon, packageNamePrefix)
+                    result.success(apps)
+                }.start()
             }
             "startApp" -> {
                 val packageName: String? = call.argument("package_name")
@@ -47,36 +87,45 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
             "toast" -> {
                 val message = call.argument("message") ?: ""
                 val short = call.argument("short_length") ?: true
-                toast(message, short);
+                toast(message, short)
             }
             "getAppInfo" -> {
                 val packageName: String = call.argument("package_name") ?: ""
-                result.success(getAppInfo(getPackageManager(registrar), packageName))
+                result.success(getAppInfo(getPackageManager(context!!), packageName))
             }
             "isSystemApp" -> {
                 val packageName: String = call.argument("package_name") ?: ""
-                result.success(isSystemApp(getPackageManager(registrar), packageName))
+                result.success(isSystemApp(getPackageManager(context!!), packageName))
             }
             else -> result.notImplemented()
         }
     }
 
-    private fun getInstalledApps(excludeSystemApps: Boolean, withIcon: Boolean, packageNamePrefix: String): List<Map<String, Any?>> {
-        val packageManager = getPackageManager(registrar)
+    private fun getInstalledApps(
+        excludeSystemApps: Boolean,
+        withIcon: Boolean,
+        packageNamePrefix: String
+    ): List<Map<String, Any?>> {
+        val packageManager = getPackageManager(context!!)
         var installedApps = packageManager.getInstalledApplications(0)
         if (excludeSystemApps)
-            installedApps = installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
+            installedApps =
+                installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
         if (packageNamePrefix.isNotEmpty())
-            installedApps = installedApps.filter { app -> app.packageName.startsWith(packageNamePrefix.toLowerCase(ENGLISH)) }
+            installedApps = installedApps.filter { app ->
+                app.packageName.startsWith(
+                    packageNamePrefix.lowercase(ENGLISH)
+                )
+            }
         return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon) }
     }
 
     private fun startApp(packageName: String?): Boolean {
         if (packageName.isNullOrBlank()) return false
         return try {
-            val launchIntent = getPackageManager(registrar).getLaunchIntentForPackage(packageName)
-            registrar.context().startActivity(launchIntent)
-            true;
+            val launchIntent = getPackageManager(context!!).getLaunchIntentForPackage(packageName)
+            context!!.startActivity(launchIntent)
+            true
         } catch (e: Exception) {
             print(e)
             false
@@ -84,7 +133,8 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
     }
 
     private fun toast(text: String, short: Boolean) {
-        Toast.makeText(getContext(registrar), text, if (short) LENGTH_SHORT else LENGTH_LONG).show()
+        Toast.makeText(context!!, text, if (short) LENGTH_SHORT else LENGTH_LONG)
+            .show()
     }
 
     private fun isSystemApp(packageManager: PackageManager, packageName: String): Boolean {
@@ -97,14 +147,17 @@ class InstalledAppsPlugin(private val registrar: Registrar) : MethodCallHandler 
         intent.action = ACTION_APPLICATION_DETAILS_SETTINGS
         val uri = Uri.fromParts("package", packageName, null)
         intent.data = uri
-        getContext(registrar).startActivity(intent)
+        context!!.startActivity(intent)
     }
 
-    private fun getAppInfo(packageManager: PackageManager, packageName: String): Map<String, Any?>? {
+    private fun getAppInfo(
+        packageManager: PackageManager,
+        packageName: String
+    ): Map<String, Any?>? {
         var installedApps = packageManager.getInstalledApplications(0)
         installedApps = installedApps.filter { app -> app.packageName == packageName }
         return if (installedApps.isEmpty()) null
-        else convertAppToMap(packageManager, installedApps[0], true);
+        else convertAppToMap(packageManager, installedApps[0], true)
     }
 
 }
