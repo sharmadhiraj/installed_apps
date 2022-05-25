@@ -35,7 +35,7 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         }
 
         @JvmStatic
-        fun register(messenger: BinaryMessenger?) {
+        fun register(messenger: BinaryMessenger) {
             val channel = MethodChannel(messenger, "installed_apps")
             channel.setMethodCallHandler(InstalledAppsPlugin())
         }
