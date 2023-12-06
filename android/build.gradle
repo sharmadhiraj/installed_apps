@@ -25,6 +25,10 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
+    if (project.android.hasProperty("namespace")) {
+        namespace 'com.sharmadhiraj.installed_apps'
+    }
+
     compileSdkVersion 30
 
     sourceSets {
