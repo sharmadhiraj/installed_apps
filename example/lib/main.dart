@@ -86,6 +86,17 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: ListTile(
+                title: Text("Uninstall app"),
+                subtitle: Text("Uninstall app with package name"),
+                onTap: () => InstalledApps.uninstallApp(
+                    "com.sharmadhiraj.installed_apps_example"),
+              ),
+            ),
           )
         ],
       ),

@@ -76,27 +76,38 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                     result.success(apps)
                 }.start()
             }
+
             "startApp" -> {
                 val packageName: String? = call.argument("package_name")
                 result.success(startApp(packageName))
             }
+
             "openSettings" -> {
                 val packageName: String? = call.argument("package_name")
                 openSettings(packageName)
             }
+
             "toast" -> {
                 val message = call.argument("message") ?: ""
                 val short = call.argument("short_length") ?: true
                 toast(message, short)
             }
+
             "getAppInfo" -> {
                 val packageName: String = call.argument("package_name") ?: ""
                 result.success(getAppInfo(getPackageManager(context!!), packageName))
             }
+
             "isSystemApp" -> {
                 val packageName: String = call.argument("package_name") ?: ""
                 result.success(isSystemApp(getPackageManager(context!!), packageName))
             }
+
+            "uninstallApp" -> {
+                val packageName: String = call.argument("package_name") ?: ""
+                result.success(uninstallApp(packageName))
+            }
+
             else -> result.notImplemented()
         }
     }
@@ -158,6 +169,17 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         installedApps = installedApps.filter { app -> app.packageName == packageName }
         return if (installedApps.isEmpty()) null
         else convertAppToMap(packageManager, installedApps[0], true)
+    }
+
+    private fun uninstallApp(packageName: String): Boolean {
+        try {
+            val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE)
+            intent.data = Uri.parse("package:$packageName")
+            context!!.startActivity(intent)
+            return true
+        } catch (e: Exception) {
+            return false
+        }
     }
 
 }

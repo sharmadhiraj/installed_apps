@@ -66,4 +66,11 @@ class InstalledApps {
       {"package_name": packageName},
     );
   }
+
+  static Future<bool?> uninstallApp(String packageName) async {
+    return _channel.invokeMethod(
+      "uninstallApp",
+      {"package_name": packageName},
+    );
+  }
 }
