@@ -41,7 +41,9 @@ class Util {
         }
 
         private fun drawableToBitmap(drawable: Drawable): Bitmap {
-            if (SDK_INT <= N_MR1) return (drawable as BitmapDrawable).bitmap
+            if (drawable is BitmapDrawable) {
+                return drawable.bitmap
+            }
             val bitmap = Bitmap.createBitmap(
                 drawable.intrinsicWidth,
                 drawable.intrinsicHeight,
