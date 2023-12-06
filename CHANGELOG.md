@@ -1,3 +1,6 @@
+## 1.3.1
+* Fixed BinaryMessenger Nullability
+
 ## 1.3.0
 * Android V2 embedding migration
 * Fix UI freeze issue during getting instgalled apps
