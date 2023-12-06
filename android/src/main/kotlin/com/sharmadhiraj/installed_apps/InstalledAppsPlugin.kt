@@ -158,11 +158,15 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
 
     private fun openSettings(packageName: String?) {
-        val intent = Intent()
-        intent.flags = FLAG_ACTIVITY_NEW_TASK
-        intent.action = ACTION_APPLICATION_DETAILS_SETTINGS
-        val uri = Uri.fromParts("package", packageName, null)
-        intent.data = uri
+        if (!isAppInstalled(packageName)) {
+            print("App $packageName is not installed on this device.")
+            return;
+        }
+        val intent = Intent().apply {
+            flags = FLAG_ACTIVITY_NEW_TASK
+            action = ACTION_APPLICATION_DETAILS_SETTINGS
+            data = Uri.fromParts("package", packageName, null)
+        }
         context!!.startActivity(intent)
     }
 
