@@ -97,6 +97,24 @@ class HomeScreen extends StatelessWidget {
                     "com.sharmadhiraj.installed_apps_example"),
               ),
             ),
+          ),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: ListTile(
+                title: Text("Is app installed"),
+                subtitle: Text("Check if app is installed using package name"),
+                onTap: () => InstalledApps.isAppInstalled(
+                        "com.sharmadhiraj.installed_apps_example")
+                    .then(
+                  (bool? value) => _showDialog(
+                      context,
+                      value ?? false
+                          ? "App is installed on this device."
+                          : "App is not installed on this device."),
+                ),
+              ),
+            ),
           )
         ],
       ),

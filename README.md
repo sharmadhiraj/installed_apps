@@ -47,5 +47,11 @@ bool isSystemApp = await InstalledApps.isSystemApp(String packageName)
 #### Uninstall app
 
 ```
-bool appIsUninstalled = await InstalledApps.uninstallApp(String packageName)
+bool uninstallIsSuccessful = await InstalledApps.uninstallApp(String packageName)
+```
+
+#### Check if app is installed
+
+```
+bool appInInstalled = await InstalledApps.isAppInstalled(String packageName)
 ```

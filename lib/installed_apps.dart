@@ -73,4 +73,11 @@ class InstalledApps {
       {"package_name": packageName},
     );
   }
+
+  static Future<bool?> isAppInstalled(String packageName) async {
+    return _channel.invokeMethod(
+      "isAppInstalled",
+      {"package_name": packageName},
+    );
+  }
 }

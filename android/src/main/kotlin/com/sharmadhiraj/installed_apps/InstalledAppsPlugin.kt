@@ -108,6 +108,11 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 result.success(uninstallApp(packageName))
             }
 
+            "isAppInstalled" -> {
+                val packageName: String = call.argument("package_name") ?: ""
+                result.success(isAppInstalled(packageName))
+            }
+
             else -> result.notImplemented()
         }
     }
@@ -178,6 +183,17 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             context!!.startActivity(intent)
             return true
         } catch (e: Exception) {
+            return false
+        }
+    }
+
+
+    private fun isAppInstalled(packageName: String?): Boolean {
+        val packageManager: PackageManager = context!!.packageManager
+        try {
+            packageManager.getPackageInfo(packageName ?: "", PackageManager.GET_ACTIVITIES)
+            return true
+        } catch (e: PackageManager.NameNotFoundException) {
             return false
         }
     }
