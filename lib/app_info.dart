@@ -46,6 +46,15 @@ class AppInfo {
   }
 
   static BuiltWith parseBuiltWith(String? builtWithRaw) {
+    if (builtWithRaw == "flutter") {
+      return BuiltWith.flutter;
+    } else if (builtWithRaw == "react_native") {
+      return BuiltWith.react_native;
+    } else if (builtWithRaw == "xamarin") {
+      return BuiltWith.xamarin;
+    } else if (builtWithRaw == "ionic") {
+      return BuiltWith.ionic;
+    }
     return BuiltWith.native_or_others;
   }
 }
