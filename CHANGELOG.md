@@ -1,3 +1,8 @@
+## 1.5.0
+
+* Include built with and installed timestamp
+* Internal improvements
+
 ## 1.4.0
 
 * Fixed issues (13,14) reported on GitHub
