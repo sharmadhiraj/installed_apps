@@ -36,6 +36,7 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    namespace 'com.sharmadhiraj.installed_apps'
 }
 
 dependencies {
