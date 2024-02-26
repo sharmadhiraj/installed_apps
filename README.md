@@ -1,57 +1,66 @@
 # Installed Apps
 
-Flutter <a href="https://pub.dev/packages/installed_apps" target="_blank">plugin</a> with utility
-methods related to installed apps on device.
-(Currently only Android is supported.)
+The **Installed Apps** plugin for Flutter provides utility methods related to installed apps on a
+device.
+
+Currently, only Android is supported.
 
 ## Getting Started
 
-1. <a href="https://pub.dev/packages/installed_apps#-installing-tab-" target="_blank">Installation
-   Guide</a>
-2. <a href="https://pub.dev/packages/installed_apps#-example-tab-" target="_blank">Example</a>
+1. [Installation Guide](https://pub.dev/packages/installed_apps/install)
+2. [Example Project](https://github.com/sharmadhiraj/installed_apps/tree/master/example)
 
-<hr/>
+## Usage
 
-#### Get list of installed apps
+#### Get List of Installed Apps
 
-```
-List<AppInfo> apps = await InstalledApps.getInstalledApps(bool excludeSystemApps, bool withIcon, String packageNamePrefix);
-```
-
-*Use packageNamePrefix to filter for apps that have package name starting with certain prefix.
-
-#### Get app info with package name
-
-```
-AppInfo app = await InstalledApps.getAppInfo(String packageName);
+``` dart
+List<AppInfo> apps = await InstalledApps.getInstalledApps(
+	bool excludeSystemApps,
+	bool withIcon,
+	String packageNamePrefix
+);
 ```
 
-#### Start app with package name
+Use `packageNamePrefix` to filter apps with package names starting with a specific prefix.
 
-```
-InstalledApps.startApp(String packageName)
-```
+#### Get App Info with Package Name
 
-#### Open app settings screen (App Info) with package name
+`AppInfo app = await InstalledApps.getAppInfo(String packageName);`
 
-```
-InstalledApps.openSettings(String packageName)
-```
+#### AppInfo model class
 
-#### Check if app is system app
-
-```
-bool isSystemApp = await InstalledApps.isSystemApp(String packageName)
-```
-
-#### Uninstall app
-
-```
-bool uninstallIsSuccessful = await InstalledApps.uninstallApp(String packageName)
+``` dart
+class AppInfo {
+  String name;
+  Uint8List? icon;
+  String packageName;
+  String versionName;
+  int versionCode;
+  BuiltWith builtWith;
+  int installedTimestamp;
+}
 ```
 
-#### Check if app is installed
+#### Start App with Package Name
 
-```
-bool appInInstalled = await InstalledApps.isAppInstalled(String packageName)
-```
+`InstalledApps.startApp(String packageName)`
+
+#### Open App Settings Screen with Package Name
+
+`InstalledApps.openSettings(String packageName)`
+
+#### Check if App is a System App
+
+`bool isSystemApp = await InstalledApps.isSystemApp(String packageName)`
+
+#### Uninstall App
+
+`bool uninstallIsSuccessful = await InstalledApps.uninstallApp(String packageName)`
+
+#### Check if App is Installed
+
+`bool appIsInstalled = await InstalledApps.isAppInstalled(String packageName)`
+
+I'm always working on making improvements. If you have any feedback, issues, or suggestions, feel
+free to reach out. Happy coding!
