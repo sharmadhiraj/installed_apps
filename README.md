@@ -26,7 +26,9 @@ Use `packageNamePrefix` to filter apps with package names starting with a specif
 
 #### Get App Info with Package Name
 
-`AppInfo app = await InstalledApps.getAppInfo(String packageName);`
+``` dart
+AppInfo app = await InstalledApps.getAppInfo(String packageName);
+```
 
 #### AppInfo model class
 
@@ -44,23 +46,35 @@ class AppInfo {
 
 #### Start App with Package Name
 
-`InstalledApps.startApp(String packageName)`
+``` dart
+InstalledApps.startApp(String packageName);
+```
 
 #### Open App Settings Screen with Package Name
 
-`InstalledApps.openSettings(String packageName)`
+``` dart
+InstalledApps.openSettings(String packageName);
+```
 
 #### Check if App is a System App
 
-`bool isSystemApp = await InstalledApps.isSystemApp(String packageName)`
+``` dart
+bool isSystemApp = await InstalledApps.isSystemApp(String packageName);
+```
 
 #### Uninstall App
 
-`bool uninstallIsSuccessful = await InstalledApps.uninstallApp(String packageName)`
+``` dart
+bool uninstallIsSuccessful = await InstalledApps.uninstallApp(String packageName);
+```
 
 #### Check if App is Installed
 
-`bool appIsInstalled = await InstalledApps.isAppInstalled(String packageName)`
+``` dart 
+bool appIsInstalled = await InstalledApps.isAppInstalled(String packageName);
+```
+
+<hr/>
 
 I'm always working on making improvements. If you have any feedback, issues, or suggestions, feel
 free to reach out. Happy coding!
