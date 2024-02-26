@@ -79,6 +79,10 @@ class AppInfoScreen extends StatelessWidget {
           title: Text("Built With"),
           subtitle: Text(app.builtWith.toString().split(".").last),
         ),
+        ListTile(
+          title: Text("Installed On"),
+          subtitle: Text(app.installedTimestamp.toString()),
+        ),
         Container(
           margin: EdgeInsets.symmetric(horizontal: 16),
           child: ElevatedButton(

@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.P
+import java.io.File
 
 class Util {
 
@@ -26,6 +27,7 @@ class Util {
             map["version_name"] = packageInfo.versionName
             map["version_code"] = getVersionCode(packageInfo)
             map["built_with"] = BuiltWithUtil.getPlatform(packageInfo.applicationInfo)
+            map["installed_timestamp"] = File(packageInfo.applicationInfo.sourceDir).lastModified()
             return map
         }
 

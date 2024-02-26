@@ -7,14 +7,16 @@ class AppInfo {
   String versionName;
   int versionCode;
   BuiltWith builtWith;
+  int installedTimestamp;
 
   AppInfo({
     required this.name,
-    this.icon,
+    required this.icon,
     required this.packageName,
     required this.versionName,
     required this.versionCode,
-    this.builtWith = BuiltWith.native_or_others,
+    required this.builtWith,
+    required this.installedTimestamp,
   });
 
   factory AppInfo.create(dynamic data) {
@@ -25,6 +27,7 @@ class AppInfo {
       versionName: data["version_name"] ?? "1.0.0",
       versionCode: data["version_code"] ?? 1,
       builtWith: parseBuiltWith(data["built_with"]),
+      installedTimestamp: data["installed_timestamp"] ?? 0,
     );
   }
 
