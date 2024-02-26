@@ -42,20 +42,20 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        InstalledAppsPlugin.register(binding.getBinaryMessenger())
+        register(binding.binaryMessenger)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     }
 
     override fun onAttachedToActivity(activityPluginBinding: ActivityPluginBinding) {
-        context = activityPluginBinding.getActivity()
+        context = activityPluginBinding.activity
     }
 
     override fun onDetachedFromActivityForConfigChanges() {}
 
     override fun onReattachedToActivityForConfigChanges(activityPluginBinding: ActivityPluginBinding) {
-        context = activityPluginBinding.getActivity()
+        context = activityPluginBinding.activity
     }
 
     override fun onDetachedFromActivity() {}
@@ -181,24 +181,24 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
 
     private fun uninstallApp(packageName: String): Boolean {
-        try {
-            val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE)
+        return try {
+            val intent = Intent(Intent.ACTION_DELETE)
             intent.data = Uri.parse("package:$packageName")
             context!!.startActivity(intent)
-            return true
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
 
     private fun isAppInstalled(packageName: String?): Boolean {
         val packageManager: PackageManager = context!!.packageManager
-        try {
+        return try {
             packageManager.getPackageInfo(packageName ?: "", PackageManager.GET_ACTIVITIES)
-            return true
+            true
         } catch (e: PackageManager.NameNotFoundException) {
-            return false
+            false
         }
     }
 
