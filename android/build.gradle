@@ -40,6 +40,10 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    compileOptions {
+        sourceCompatibility "17"
+        targetCompatibility JavaVersion.VERSION_17
+    }
     namespace 'com.sharmadhiraj.installed_apps'
 }
 
