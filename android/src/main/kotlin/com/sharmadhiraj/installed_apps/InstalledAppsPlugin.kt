@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
+import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.widget.Toast
@@ -154,7 +155,13 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
 
     private fun isSystemApp(packageManager: PackageManager, packageName: String): Boolean {
-        return packageManager.getLaunchIntentForPackage(packageName) == null
+        return try {
+            val ai = packageManager.getApplicationInfo(packageName, 0)
+            (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
+            false
+        }
     }
 
     private fun openSettings(packageName: String?) {
