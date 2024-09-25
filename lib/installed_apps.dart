@@ -68,8 +68,7 @@ class InstalledApps {
   ///
   /// [packageName] is the package name of the app to retrieve information for.
   ///
-  /// Returns an [AppInfo] object representing the app.
-  /// If app is not found it returns null
+  /// Returns [AppInfo] for the given package name, or null if not found.
   static Future<AppInfo?> getAppInfo(String packageName) async {
     var app = await _channel.invokeMethod(
       "getAppInfo",

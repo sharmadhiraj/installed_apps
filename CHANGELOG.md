@@ -1,3 +1,10 @@
+## 1.5.1
+
+* Upgraded Kotlin and compile options versions.
+* Return null if app is not found by package name.
+* Improved system app detection filter.
+* Miscellaneous internal and performance improvements.
+
 ## 1.5.0
 
 * Include built with and installed timestamp

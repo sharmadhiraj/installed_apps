@@ -156,10 +156,9 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
     private fun isSystemApp(packageManager: PackageManager, packageName: String): Boolean {
         return try {
-            val ai = packageManager.getApplicationInfo(packageName, 0)
-            (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
         } catch (e: PackageManager.NameNotFoundException) {
-            e.printStackTrace()
             false
         }
     }
