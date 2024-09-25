@@ -1,3 +1,7 @@
+## 1.5.2
+
+* Updated the compile SDK and Gradle versions.
+
 ## 1.5.1
 
 * Upgraded Kotlin and compile options versions.
