@@ -20,9 +20,9 @@ class AppInfoScreen extends StatelessWidget {
   }
 
   Widget _buildAppInfoWithPackageName() {
-    return FutureBuilder<AppInfo>(
+    return FutureBuilder<AppInfo?>(
       future: InstalledApps.getAppInfo("com.google.android.gm"),
-      builder: (BuildContext buildContext, AsyncSnapshot<AppInfo> snapshot) {
+      builder: (BuildContext buildContext, AsyncSnapshot<AppInfo?> snapshot) {
         return snapshot.connectionState == ConnectionState.done
             ? snapshot.hasData && snapshot.data != null
                 ? _buildAppInfo(snapshot.data!)
