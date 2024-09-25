@@ -2,7 +2,7 @@ group 'com.sharmadhiraj.installed_apps'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.8.20'
     repositories {
         google()
         mavenCentral()
@@ -39,6 +39,10 @@ android {
     }
     lintOptions {
         disable 'InvalidPackage'
+    }
+    compileOptions {
+        sourceCompatibility "17"
+        targetCompatibility JavaVersion.VERSION_17
     }
     namespace 'com.sharmadhiraj.installed_apps'
 }
