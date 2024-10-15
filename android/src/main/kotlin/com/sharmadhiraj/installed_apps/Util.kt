@@ -28,7 +28,18 @@ class Util {
             map["version_code"] = getVersionCode(packageInfo)
             map["built_with"] = BuiltWithUtil.getPlatform(packageInfo.applicationInfo)
             map["installed_timestamp"] = File(packageInfo.applicationInfo.sourceDir).lastModified()
+            map["system_app"] = isSystemApp(packageManager, app.packageName)
             return map
+        }
+
+        private fun isSystemApp(packageManager: PackageManager, packageName: String): Boolean {
+            return try {
+                val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0 ||
+                        (appInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0
+            } catch (e: PackageManager.NameNotFoundException) {
+                false
+            }
         }
 
 
