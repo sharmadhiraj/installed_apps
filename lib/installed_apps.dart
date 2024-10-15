@@ -16,7 +16,7 @@ class InstalledApps {
     bool excludeSystemApps = true,
     bool withIcon = false,
     String packageNamePrefix = "",
-    bool onlyAppsWithLaunchIntent = true,
+    bool onlyAppsWithLaunchIntent = false,
   ]) async {
     dynamic apps = await _channel.invokeMethod(
       "getInstalledApps",
