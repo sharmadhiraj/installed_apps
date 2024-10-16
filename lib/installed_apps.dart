@@ -10,6 +10,7 @@ class InstalledApps {
   /// [excludeSystemApps] specifies whether to exclude system apps from the list.
   /// [withIcon] specifies whether to include app icons in the list.
   /// [packageNamePrefix] is an optional parameter to filter apps with package names starting with a specific prefix.
+  /// [onlyAppsWithLaunchIntent] is an optional parameter to only include apps that have launch intent.
   ///
   /// Returns a list of [AppInfo] objects representing the installed apps.
   static Future<List<AppInfo>> getInstalledApps([
