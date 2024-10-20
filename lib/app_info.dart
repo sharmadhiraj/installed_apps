@@ -9,7 +9,7 @@ class AppInfo {
   BuiltWith builtWith;
   int installedTimestamp;
   List<Map<String, dynamic>> permissions;
-  List<Map> permissionsTest;
+  List permissionsTest;
 
   AppInfo({
     required this.name,
@@ -41,7 +41,7 @@ class AppInfo {
             }
           }) ?? []
       ),
-      permissionsTest: List<Map>.from(data["permissions"] ?? []),
+      permissionsTest: List.from(data["permissions"] ?? []),
     );
   }
 
