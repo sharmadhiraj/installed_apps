@@ -8,7 +8,7 @@ class AppInfo {
   int versionCode;
   BuiltWith builtWith;
   int installedTimestamp;
-  List<Map<String, Any>> permissions; // Yeni eklenen alan
+  List<Map<String, dynamic>> permissions; // Yeni eklenen alan
 
   AppInfo({
     required this.name,
@@ -30,7 +30,7 @@ class AppInfo {
       versionCode: data["version_code"] ?? 1,
       builtWith: parseBuiltWith(data["built_with"]),
       installedTimestamp: data["installed_timestamp"] ?? 0,
-      permissions: List<Map<String, Any>>.from(data["permissions"] ?? []), // Yeni eklenen alan
+      permissions: List<Map<String, dynamic>>.from(data["permissions"] ?? []), // Yeni eklenen alan
     );
   }
 
