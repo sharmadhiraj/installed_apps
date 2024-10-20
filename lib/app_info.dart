@@ -18,7 +18,6 @@ class AppInfo {
     required this.versionCode,
     required this.builtWith,
     required this.installedTimestamp,
-    required this.permissions,
     required this.permissionsTest,
   });
 
