@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-// İzin durumu için bir sınıf tanımlayalım
 class PermissionStatus {
   final String permission;
   final bool granted;
@@ -16,7 +15,7 @@ class AppInfo {
   int versionCode;
   BuiltWith builtWith;
   int installedTimestamp;
-  List<PermissionStatus> permissions; // Güncellenen alan
+  List<PermissionStatus> permissions;
 
   AppInfo({
     required this.name,
@@ -26,7 +25,7 @@ class AppInfo {
     required this.versionCode,
     required this.builtWith,
     required this.installedTimestamp,
-    required this.permissions, // Güncellenen alan
+    required this.permissions,
   });
 
   factory AppInfo.create(dynamic data) {
@@ -43,7 +42,7 @@ class AppInfo {
                     permission: perm["permission"],
                     granted: perm["granted"],
                   ))
-              .toList() ?? [], // Güncellenen alan
+              .toList() ?? [],
     );
   }
 
