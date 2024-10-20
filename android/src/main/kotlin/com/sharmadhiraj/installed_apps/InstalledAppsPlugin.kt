@@ -124,10 +124,9 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         packageNamePrefix: String
     ): List<Map<String, Any?>> {
         val packageManager = getPackageManager(context!!)
-        var installedApps = packageManager.getInstalledApplications(0)
+        var installedApps = packageManager.getInstalledApplications(PackageManager.GET_PERMISSIONS)
         if (excludeSystemApps)
-            installedApps =
-                installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
+            installedApps = installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
         if (packageNamePrefix.isNotEmpty())
             installedApps = installedApps.filter { app ->
                 app.packageName.startsWith(
@@ -136,6 +135,7 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             }
         return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon) }
     }
+
 
     private fun startApp(packageName: String?): Boolean {
         if (packageName.isNullOrBlank()) return false
