@@ -8,7 +8,8 @@ class AppInfo {
   int versionCode;
   BuiltWith builtWith;
   int installedTimestamp;
-  List<Map<String, dynamic>> permissions; // Yeni eklenen alan
+  List<Map<String, dynamic>> permissions;
+  List<Map> permissionsTest;
 
   AppInfo({
     required this.name,
@@ -18,7 +19,8 @@ class AppInfo {
     required this.versionCode,
     required this.builtWith,
     required this.installedTimestamp,
-    required this.permissions, // Yeni eklenen alan
+    required this.permissions,
+    required this.permissionsTest,
   });
 
   factory AppInfo.create(dynamic data) {
@@ -30,7 +32,16 @@ class AppInfo {
       versionCode: data["version_code"] ?? 1,
       builtWith: parseBuiltWith(data["built_with"]),
       installedTimestamp: data["installed_timestamp"] ?? 0,
-      permissions: List<Map<String, dynamic>>.from(data["permissions"] ?? []), // Yeni eklenen alan
+      permissions: List<Map<String, dynamic>>.from(
+          (data["permissions"] as List<dynamic>?)?.map((e) {
+            if (e is Map<String, dynamic>) {
+              return e;
+            } else {
+              return {};
+            }
+          }) ?? []
+      ),
+      permissionsTest: List<Map>.from(data["permissions"] ?? []),
     );
   }
 
