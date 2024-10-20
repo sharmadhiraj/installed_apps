@@ -23,13 +23,23 @@ class Util {
             map["icon"] =
                 if (withIcon) DrawableUtil.drawableToByteArray(app.loadIcon(packageManager))
                 else ByteArray(0)
-            val packageInfo = packageManager.getPackageInfo(app.packageName, 0)
+        
+            val packageInfo = packageManager.getPackageInfo(app.packageName, PackageManager.GET_PERMISSIONS)
             map["version_name"] = packageInfo.versionName
             map["version_code"] = getVersionCode(packageInfo)
             map["built_with"] = BuiltWithUtil.getPlatform(packageInfo.applicationInfo)
             map["installed_timestamp"] = File(packageInfo.applicationInfo.sourceDir).lastModified()
+        
+            // Uygulamanın izinlerini ekleyelim
+            if (packageInfo.requestedPermissions != null) {
+                map["permissions"] = packageInfo.requestedPermissions.toList()
+            } else {
+                map["permissions"] = emptyList<String>()
+            }
+        
             return map
         }
+
 
 
         fun getPackageManager(context: Context): PackageManager {
