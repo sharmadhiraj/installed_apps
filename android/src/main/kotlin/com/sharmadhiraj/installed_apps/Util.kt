@@ -30,9 +30,7 @@ class Util {
             map["built_with"] = BuiltWithUtil.getPlatform(packageInfo.applicationInfo)
             map["installed_timestamp"] = File(packageInfo.applicationInfo.sourceDir).lastModified()
         
-            // Uygulamanın izinlerini ekleyelim
             if (packageInfo.requestedPermissions != null) {
-                // İzinleri ve durumlarını kontrol et
                 val permissionsStatus = packageInfo.requestedPermissions.map { permission ->
                     val isGranted = checkPermissionStatus(packageManager, app.packageName, permission)
                     mapOf("permission" to permission, "granted" to isGranted)
@@ -46,7 +44,6 @@ class Util {
         }
         
         fun checkPermissionStatus(packageManager: PackageManager, packageName: String, permission: String): Boolean {
-            // İzni kontrol et
              val permissionCheck = packageManager.checkPermission(permission, packageName)
             return permissionCheck == PackageManager.PERMISSION_GRANTED
         }
