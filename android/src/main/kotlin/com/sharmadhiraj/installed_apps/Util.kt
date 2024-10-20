@@ -47,8 +47,8 @@ class Util {
         
         fun checkPermissionStatus(packageManager: PackageManager, packageName: String, permission: String): Boolean {
             // İzni kontrol et
-            val packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
-            return packageInfo.requestedPermissions?.contains(permission) == true
+             val permissionCheck = packageManager.checkPermission(permission, packageName)
+            return permissionCheck == PackageManager.PERMISSION_GRANTED
         }
 
 
