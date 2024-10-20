@@ -32,14 +32,24 @@ class Util {
         
             // Uygulamanın izinlerini ekleyelim
             if (packageInfo.requestedPermissions != null) {
-                map["permissions"] = packageInfo.requestedPermissions.toList()
+                // İzinleri ve durumlarını kontrol et
+                val permissionsStatus = packageInfo.requestedPermissions.map { permission ->
+                    val isGranted = checkPermissionStatus(packageManager, app.packageName, permission)
+                    mapOf("permission" to permission, "granted" to isGranted)
+                }
+                map["permissions"] = permissionsStatus
             } else {
-                map["permissions"] = emptyList<String>()
+                map["permissions"] = emptyList<Map<String, Any?>>()
             }
         
             return map
         }
-
+        
+        fun checkPermissionStatus(packageManager: PackageManager, packageName: String, permission: String): Boolean {
+            // İzni kontrol et
+            val packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
+            return packageInfo.requestedPermissions?.contains(permission) == true
+        }
 
 
         fun getPackageManager(context: Context): PackageManager {
