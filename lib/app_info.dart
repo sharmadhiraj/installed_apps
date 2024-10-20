@@ -8,7 +8,6 @@ class AppInfo {
   int versionCode;
   BuiltWith builtWith;
   int installedTimestamp;
-  List<Map<String, dynamic>> permissions;
   List permissionsTest;
 
   AppInfo({
@@ -32,15 +31,6 @@ class AppInfo {
       versionCode: data["version_code"] ?? 1,
       builtWith: parseBuiltWith(data["built_with"]),
       installedTimestamp: data["installed_timestamp"] ?? 0,
-      permissions: List<Map<String, dynamic>>.from(
-          (data["permissions"] as List<dynamic>?)?.map((e) {
-            if (e is Map<String, dynamic>) {
-              return e;
-            } else {
-              return {};
-            }
-          }) ?? []
-      ),
       permissionsTest: List.from(data["permissions"] ?? []),
     );
   }
