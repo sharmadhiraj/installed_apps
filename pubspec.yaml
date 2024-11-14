@@ -4,7 +4,7 @@ version: 1.5.2
 homepage: https://github.com/sharmadhiraj/installed_apps
 
 environment:
-  sdk: '>=2.12.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
   flutter: ">=1.12.0"
 
 dependencies:

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:installed_apps/app_info.dart';
-import 'package:installed_apps/installed_apps.dart';
+import 'package:installed_apps/index.dart';
 
 class AppInfoScreen extends StatelessWidget {
   final AppInfo? app;
@@ -21,7 +20,10 @@ class AppInfoScreen extends StatelessWidget {
 
   Widget _buildAppInfoWithPackageName() {
     return FutureBuilder<AppInfo?>(
-      future: InstalledApps.getAppInfo("com.google.android.gm"),
+      future: InstalledApps.getAppInfo(
+        "com.google.android.gm",
+        BuiltWith.flutter,
+      ),
       builder: (BuildContext buildContext, AsyncSnapshot<AppInfo?> snapshot) {
         return snapshot.connectionState == ConnectionState.done
             ? snapshot.hasData && snapshot.data != null
