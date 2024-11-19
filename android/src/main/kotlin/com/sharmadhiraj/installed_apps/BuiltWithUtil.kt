@@ -10,19 +10,27 @@ class BuiltWithUtil {
     companion object {
 
         fun getPlatform(applicationInfo: ApplicationInfo): String {
+            if (Build.VERSION.SDK_INT >= 34) {
+                ZipPathValidator.clearCallback()
+            }
+
             val apkPath = applicationInfo.sourceDir
-            val zipFile = ZipFile(apkPath)
-            val entries: List<String> = zipFile.entries().toList().map { entry -> entry.name }
-            return if (isFlutterApp(entries)) {
-                "flutter"
-            } else if (isReactNativeApp(entries)) {
-                "react_native"
-            } else if (isXamarinApp(entries)) {
-                "xamarin"
-            } else if (isIonicApp(entries)) {
-                "ionic"
-            } else {
-                "native_or_others"
+            val zipFile: ZipFile
+            val entries: List<String>
+            try {
+                zipFile = ZipFile(apkPath)
+                entries = zipFile.entries().toList().map { it.name }
+            } catch (e: ZipException) {
+                Log.e("ZIP_ERROR", "Error processing ZIP file", e)
+                return "error_processing_zip"
+            }
+
+            return when {
+                isFlutterApp(entries) -> "flutter"
+                isReactNativeApp(entries) -> "react_native"
+                isXamarinApp(entries) -> "xamarin"
+                isIonicApp(entries) -> "ionic"
+                else -> "native_or_others"
             }
         }
 
