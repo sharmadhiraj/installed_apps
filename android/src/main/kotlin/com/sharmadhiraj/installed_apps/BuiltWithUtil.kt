@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import java.util.zip.ZipFile
+import dalvik.system.ZipPathValidator
 
 class BuiltWithUtil {
 
