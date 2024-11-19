@@ -4,18 +4,12 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import java.util.zip.ZipFile
-import android.os.Build
-import dalvik.system.ZipPathValidator
 
 class BuiltWithUtil {
 
     companion object {
 
         fun getPlatform(applicationInfo: ApplicationInfo): String {
-            if (Build.VERSION.SDK_INT >= 34) {
-                ZipPathValidator.clearCallback()
-            }
-             
             val apkPath = applicationInfo.sourceDir
             val zipFile = ZipFile(apkPath)
             val entries: List<String> = zipFile.entries().toList().map { entry -> entry.name }
