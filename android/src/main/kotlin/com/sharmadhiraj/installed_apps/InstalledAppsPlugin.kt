@@ -124,8 +124,8 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     private fun getInstalledApps(
         excludeSystemApps: Boolean,
         withIcon: Boolean,
-        packageNamePrefix: String
-        platformType: PlatformType?
+        packageNamePrefix: String,
+        platformType: PlatformType?,
     ): List<Map<String, Any?>> {
         val packageManager = getPackageManager(context!!)
         var installedApps = packageManager.getInstalledApplications(PackageManager.GET_PERMISSIONS)
