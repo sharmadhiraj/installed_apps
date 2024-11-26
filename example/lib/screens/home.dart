@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
         _buildListItem(
           context,
           "Installed Apps",
-          "Get installed apps on device. With options to exclude system app, get app icon & matching package name prefix.",
+          "Get installed apps on device. With options to exclude system app, exclude unlaunchable apps, get app icon & matching package name prefix.",
           () => Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AppListScreen()),
