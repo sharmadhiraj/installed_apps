@@ -68,13 +68,13 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         }
         when (call.method) {
             "getInstalledApps" -> {
-                val includeSystemApps = call.argument("exclude_system_apps") ?: true
-                val includeSystemApps = call.argument("exclude_unlaunchable") ?: true
+                val excludeSystemApps = call.argument("exclude_system_apps") ?: true
+                val excludeLaunchableApps = call.argument("exclude_unlaunchable") ?: true
                 val withIcon = call.argument("with_icon") ?: false
                 val packageNamePrefix: String = call.argument("package_name_prefix") ?: ""
                 Thread {
                     val apps: List<Map<String, Any?>> =
-                        getInstalledApps(includeSystemApps, withIcon, packageNamePrefix)
+                        getInstalledApps(excludeSystemApps, excludeLaunchableApps, withIcon, packageNamePrefix)
                     result.success(apps)
                 }.start()
             }
