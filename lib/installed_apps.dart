@@ -8,12 +8,14 @@ class InstalledApps {
   /// Retrieves a list of installed apps on the device.
   ///
   /// [excludeSystemApps] specifies whether to exclude system apps from the list.
+  /// [excludeUnlaunchable] specifies whether to exclude apps that cannot be launched
   /// [withIcon] specifies whether to include app icons in the list.
   /// [packageNamePrefix] is an optional parameter to filter apps with package names starting with a specific prefix.
   ///
   /// Returns a list of [AppInfo] objects representing the installed apps.
   static Future<List<AppInfo>> getInstalledApps([
     bool excludeSystemApps = true,
+    bool excludeUnlaunchable = true,
     bool withIcon = false,
     String packageNamePrefix = "",
   ]) async {
@@ -21,6 +23,7 @@ class InstalledApps {
       "getInstalledApps",
       {
         "exclude_system_apps": excludeSystemApps,
+        "exclude_unlaunchable": excludeUnlaunchable,
         "with_icon": withIcon,
         "package_name_prefix": packageNamePrefix,
       },
