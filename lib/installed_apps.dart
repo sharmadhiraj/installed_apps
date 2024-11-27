@@ -46,9 +46,10 @@ class InstalledApps {
   /// Getting running apps
   /// [excludeSystemApps] specifies whether to exclude system apps from the list.wld
   /// Returns a list of [AppInfo] objects representing the installed apps.
-  static Future<List<AppInfo>> getRunningApps([
+  static Future<List<AppInfo>> getRunningApps({
     bool excludeSystemApps = true,
-  ]) async {
+    bool withIcon = true,
+  }) async {
       dynamic apps = await _channel.invokeMethod(
         "getRunningApps",
         {"exclude_system_apps": excludeSystemApps},
