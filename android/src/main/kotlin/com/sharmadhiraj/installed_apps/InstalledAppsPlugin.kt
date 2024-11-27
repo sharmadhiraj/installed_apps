@@ -148,31 +148,34 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon, platformType) }
     }
 
-    private fun getRunningApps(excludeSystemApps: Boolean): List<Map<String, Any?>> {
+    private fun getRunningApps(
+        excludeSystemApps: Boolean,
+        withIcon: Boolean,
+        platformType: PlatformType?
+        ): List<Map<String, Any?>> {
         val activityManager = context!!.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
         val packageManager = getPackageManager(context!!)
         val runningProcesses = activityManager.runningAppProcesses
         val runningApps = mutableListOf<Map<String, Any?>>()
     
-         runningProcesses?.forEach { processInfo ->
-                processInfo.pkgList?.forEach { packageName ->
-                    try {
-                        val appInfo = packageManager.getApplicationInfo(packageName, 0)
-                        val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                        if (!excludeSystemApps || !isSystemApp) {
-                            runningApps.add(appInfo)
-                        }
-                    } catch (e: PackageManager.NameNotFoundException) {
-                        // No App Info
+        runningProcesses?.forEach { processInfo ->
+            processInfo.pkgList?.forEach { packageName ->
+                try {
+                    val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                    val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                    if (!excludeSystemApps || !isSystemApp) {
+                        // convertAppToMap kullanarak Map<String, Any?> türüne dönüştür
+                        val appMap = convertAppToMap(packageManager, appInfo, withIcon, platformType)
+                        runningApps.add(appMap)
                     }
+                } catch (e: PackageManager.NameNotFoundException) {
+                    // Uygulama bilgisi bulunamadı, devam et
                 }
             }
-        
-            // convertAppToMap ile dönüştürüp geri döndür
-            return runningApps.map { app ->
-                convertAppToMap(packageManager, app, withIcon, platformType)
-            }
+        }
+        return runningApps
     }
+
 
 
     private fun startApp(packageName: String?): Boolean {
