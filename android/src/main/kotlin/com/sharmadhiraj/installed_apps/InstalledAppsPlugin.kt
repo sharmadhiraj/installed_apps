@@ -79,6 +79,14 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 }.start()
             }
 
+            "getRunningApps" -> {
+                val excludeSystemApps = call.argument("exclude_system_apps") ?: true
+                Thread {
+                    val apps = getRunningApps(excludeSystemApps)
+                    result.success(apps)
+                }.start()
+            }
+            
             "startApp" -> {
                 val packageName: String? = call.argument("package_name")
                 result.success(startApp(packageName))
@@ -138,6 +146,31 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 )
             }
         return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon, platformType) }
+    }
+
+    private fun getRunningApps(excludeSystemApps: Boolean): List<Map<String, Any?>> {
+        val activityManager = context!!.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        val packageManager = getPackageManager(context!!)
+        val runningProcesses = activityManager.runningAppProcesses
+        val runningApps = mutableListOf<Map<String, Any?>>()
+    
+        runningProcesses?.forEach { processInfo ->
+            try {
+                val appInfo = packageManager.getApplicationInfo(processInfo.processName, 0)
+                val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                if (!excludeSystemApps || !isSystemApp) {
+                    runningApps.add(
+                        mapOf(
+                            "packageName" to processInfo.processName,
+                            "appName" to packageManager.getApplicationLabel(appInfo).toString()
+                        )
+                    )
+                }
+            } catch (e: PackageManager.NameNotFoundException) {
+                // Uygulama bilgisi bulunamadı
+            }
+        }
+        return runningApps
     }
 
 
