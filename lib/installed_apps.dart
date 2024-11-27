@@ -68,6 +68,14 @@ class InstalledApps {
     );
   }
 
+  /// Opens Usage Access Settings
+  ///
+  static openUsageAccessSettings() {
+    _channel.invokeMethod(
+      "openUsageAccessSettings"
+    );
+  }
+  
   /// Displays a toast message on the device.
   ///
   /// [message] is the message to display.
