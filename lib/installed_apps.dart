@@ -43,6 +43,21 @@ class InstalledApps {
     );
   }
 
+  /// Getting running apps
+  /// [excludeSystemApps] specifies whether to exclude system apps from the list.wld
+  /// Returns a list of [AppInfo] objects representing the installed apps.
+  static Future<List<AppInfo>> getRunningApps([
+    bool excludeSystemApps = true,
+  ]) async {
+      dynamic apps = await _channel.invokeMethod(
+        "getRunningApps",
+        {"exclude_system_apps": excludeSystemApps},
+      );
+
+      return AppInfo.parseList(apps);
+  }
+
+
   /// Opens the settings screen (App Info) of an app with the specified package name.
   ///
   /// [packageName] is the package name of the app whose settings screen should be opened.
