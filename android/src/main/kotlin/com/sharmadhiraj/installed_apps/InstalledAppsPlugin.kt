@@ -154,23 +154,24 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         val runningProcesses = activityManager.runningAppProcesses
         val runningApps = mutableListOf<Map<String, Any?>>()
     
-        runningProcesses?.forEach { processInfo ->
-            try {
-                val appInfo = packageManager.getApplicationInfo(processInfo.processName, 0)
-                val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                if (!excludeSystemApps || !isSystemApp) {
-                    runningApps.add(
-                        mapOf(
-                            "packageName" to processInfo.processName,
-                            "appName" to packageManager.getApplicationLabel(appInfo).toString()
-                        )
-                    )
+         runningProcesses?.forEach { processInfo ->
+                processInfo.pkgList?.forEach { packageName ->
+                    try {
+                        val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                        val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                        if (!excludeSystemApps || !isSystemApp) {
+                            runningApps.add(appInfo)
+                        }
+                    } catch (e: PackageManager.NameNotFoundException) {
+                        // No App Info
+                    }
                 }
-            } catch (e: PackageManager.NameNotFoundException) {
-                // Uygulama bilgisi bulunamadı
             }
-        }
-        return runningApps
+        
+            // convertAppToMap ile dönüştürüp geri döndür
+            return runningApps.map { app ->
+                convertAppToMap(packageManager, app, withIcon, platformType)
+            }
     }
 
 
