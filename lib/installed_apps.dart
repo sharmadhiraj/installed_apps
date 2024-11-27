@@ -52,7 +52,10 @@ class InstalledApps {
   }) async {
       dynamic apps = await _channel.invokeMethod(
         "getRunningApps",
-        {"exclude_system_apps": excludeSystemApps},
+        {
+          "exclude_system_apps": excludeSystemApps,
+          "with_icon": withIcon, 
+        },
       );
 
       return AppInfo.parseList(apps);
