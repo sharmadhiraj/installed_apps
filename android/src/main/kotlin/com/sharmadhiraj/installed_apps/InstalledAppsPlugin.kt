@@ -154,30 +154,64 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         excludeSystemApps: Boolean,
         withIcon: Boolean,
         platformType: PlatformType?
-        ): List<Map<String, Any?>> {
-        val activityManager = context!!.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+    ): List<Map<String, Any?>> {
         val packageManager = getPackageManager(context!!)
-        val runningProcesses = activityManager.runningAppProcesses
         val runningApps = mutableListOf<Map<String, Any?>>()
     
+        // 1. Kullanıcı İstatistiklerini Kullanma
+        val usageStatsManager = context!!.getSystemService(Context.USAGE_STATS_SERVICE) as android.app.usage.UsageStatsManager
+        val currentTime = System.currentTimeMillis()
+        val endTime = currentTime
+        val startTime = currentTime - 1000 * 60 * 60 * 24 // Son 24 saat
+    
+        val usageStats = usageStatsManager.queryUsageStats(
+            android.app.usage.UsageStatsManager.INTERVAL_DAILY,
+            startTime,
+            endTime
+        )
+    
+        if (usageStats != null) {
+            val uniquePackages = mutableSetOf<String>()
+    
+            usageStats.forEach { stat ->
+                val packageName = stat.packageName
+                if (packageName != null && uniquePackages.add(packageName)) {
+                    try {
+                        val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                        val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                        if (!excludeSystemApps || !isSystemApp) {
+                            val appMap = convertAppToMap(packageManager, appInfo, withIcon, platformType)
+                            runningApps.add(appMap)
+                        }
+                    } catch (e: PackageManager.NameNotFoundException) {
+                        // Paket bulunamadı, devam et
+                    }
+                }
+            }
+        }
+    
+        // 2. Çalışan İşlemleri Kullanma (Eski Yöntem)
+        val activityManager = context!!.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        val runningProcesses = activityManager.runningAppProcesses
         runningProcesses?.forEach { processInfo ->
             processInfo.pkgList?.forEach { packageName ->
                 try {
-                    val appInfo = packageManager.getApplicationInfo(packageName, 0)
-                    val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                    if (!excludeSystemApps || !isSystemApp) {
-                        // convertAppToMap kullanarak Map<String, Any?> türüne dönüştür
-                        val appMap = convertAppToMap(packageManager, appInfo, withIcon, platformType)
-                        runningApps.add(appMap)
+                    if (!runningApps.any { it["packageName"] == packageName }) { // Eğer daha önce eklenmediyse
+                        val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                        val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                        if (!excludeSystemApps || !isSystemApp) {
+                            val appMap = convertAppToMap(packageManager, appInfo, withIcon, platformType)
+                            runningApps.add(appMap)
+                        }
                     }
                 } catch (e: PackageManager.NameNotFoundException) {
                     // Uygulama bilgisi bulunamadı, devam et
                 }
             }
         }
+    
         return runningApps
     }
-
 
 
     private fun startApp(packageName: String?): Boolean {
