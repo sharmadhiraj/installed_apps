@@ -6,8 +6,8 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.pm.ApplicationInfo
 import android.net.Uri
-import android.provider.Settings
 import android.app.usage.UsageStatsManager
+import android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
@@ -139,7 +139,11 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
     
     private fun openUsageAccessSettings() {
-        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        val intent = Intent().apply {
+            flags = FLAG_ACTIVITY_NEW_TASK
+            action = ACTION_USAGE_ACCESS_SETTINGS
+        }
+        
         context!!.startActivity(intent)
     }
  
