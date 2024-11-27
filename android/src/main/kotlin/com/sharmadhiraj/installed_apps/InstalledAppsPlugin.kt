@@ -127,10 +127,20 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 result.success(isAppInstalled(packageName))
             }
 
+             "openUsageAccessSettings" -> {
+                openUsageAccessSettings()
+                result.success(null)
+            }
+             
             else -> result.notImplemented()
         }
     }
-
+    
+    private fun openUsageAccessSettings() {
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
+        context!!.startActivity(intent)
+    }
+ 
     private fun getInstalledApps(
         excludeSystemApps: Boolean,
         withIcon: Boolean,
