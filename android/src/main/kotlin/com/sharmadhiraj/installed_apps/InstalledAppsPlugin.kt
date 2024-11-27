@@ -81,8 +81,10 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
             "getRunningApps" -> {
                 val excludeSystemApps = call.argument("exclude_system_apps") ?: true
+                val withIcon = call.argument("with_icon") ?: false
+                val platformTypeName: String = call.argument("platform_type") ?: ""
                 Thread {
-                    val apps = getRunningApps(excludeSystemApps)
+                    val apps = getRunningApps(excludeSystemApps, withIcon, PlatformType.fromString(platformTypeName))
                     result.success(apps)
                 }.start()
             }
