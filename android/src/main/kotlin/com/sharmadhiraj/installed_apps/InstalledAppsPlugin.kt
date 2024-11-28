@@ -1,5 +1,7 @@
 package com.sharmadhiraj.installed_apps
 
+import android.app.AppOpsManager
+import android.os.Build
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -129,6 +131,11 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 result.success(isAppInstalled(packageName))
             }
 
+            "checkUsageAccessPermission" -> {
+                val isGranted = isUsageAccessGranted()
+                result.success(isGranted)
+            }
+            
              "openUsageAccessSettings" -> {
                 openUsageAccessSettings()
                 result.success(null)
@@ -145,6 +152,24 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         }
         
         context!!.startActivity(intent)
+    }
+
+    private fun isUsageAccessGranted(): Boolean {
+        val appOpsManager = context!!.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOpsManager.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context!!.packageName
+            )
+        } else {
+            appOpsManager.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context!!.packageName
+            )
+        }
+        return mode == AppOpsManager.MODE_ALLOWED
     }
  
     private fun getInstalledApps(
