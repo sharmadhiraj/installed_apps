@@ -1,5 +1,7 @@
 package com.sharmadhiraj.installed_apps
 
+import android.app.ActivityManager
+import android.view.accessibility.AccessibilityManager
 import android.app.AppOpsManager
 import android.os.Build
 import android.content.Context
@@ -11,6 +13,7 @@ import android.net.Uri
 import android.app.usage.UsageStatsManager
 import android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+import android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
@@ -135,6 +138,20 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 val isGranted = isUsageAccessGranted()
                 result.success(isGranted)
             }
+
+            "checkAccessibilityPermission" -> {
+                result.success(isAccessibilityPermissionGranted())
+            }
+            
+            "requestAccessibilityPermission" -> {
+                checkAndRequestAccessibilityPermission()
+                result.success(null) // İşlem başlatıldığı için geri dönecek bir sonuç yok
+            }
+
+            "closeBackgroundApps" -> {
+                val success = closeBackgroundApps()
+                result.success(success)
+            }
             
              "openUsageAccessSettings" -> {
                 openUsageAccessSettings()
@@ -153,6 +170,43 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         
         context!!.startActivity(intent)
     }
+
+    private fun checkAndRequestAccessibilityPermission() {
+        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context!!.startActivity(intent)
+    }
+    
+    private fun isAccessibilityPermissionGranted(): Boolean {
+        val accessibilityManager = context!!.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        return accessibilityManager.isEnabled && accessibilityManager.isTouchExplorationEnabled
+    }
+    
+    private fun closeBackgroundApps(): Boolean {
+        if (!isAccessibilityPermissionGranted()) {
+            checkAndRequestAccessibilityPermission()
+            return false
+        }
+    
+        // Kullanıcı izin verdikten sonra çalışan uygulamaları kapatır
+        val activityManager = context!!.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val runningApps = activityManager.runningAppProcesses ?: return false
+    
+        runningApps.forEach { processInfo ->
+            processInfo.pkgList.forEach { packageName ->
+                if (packageName != context!!.packageName) {
+                    try {
+                        activityManager.killBackgroundProcesses(packageName)
+                    } catch (e: Exception) {
+                        // Uygulama kapatılamadı
+                    }
+                }
+            }
+        }
+        return true
+    }
+
 
     private fun isUsageAccessGranted(): Boolean {
         val appOpsManager = context!!.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
