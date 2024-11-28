@@ -203,7 +203,7 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         val usageStatsManager = context!!.getSystemService(Context.USAGE_STATS_SERVICE) as android.app.usage.UsageStatsManager
         val currentTime = System.currentTimeMillis()
         val endTime = currentTime
-        val startTime = currentTime - 1000 * 60 * 60 * 24 // Son 24 saat
+        val startTime = currentTime - 1000 * 60 * 60 * 1 // Last 1 hour
     
         val usageStats = usageStatsManager.queryUsageStats(
             android.app.usage.UsageStatsManager.INTERVAL_DAILY,
