@@ -181,13 +181,22 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
     
     private fun isAccessibilityPermissionGranted(): Boolean {
-        val accessibilityManager = context!!.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
-        return accessibilityManager.isEnabled && accessibilityManager.isTouchExplorationEnabled
+        val accessibilityManager =
+            context!!.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+    
+        val enabledServices = Settings.Secure.getString(
+            context!!.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        )
+        val myServiceName = "${context!!.packageName}/net.permission.man.MyAccessibilityService"
+    
+        // check: MyAccessibilityService is enabled?
+        return enabledServices?.contains(myServiceName) == true &&
+                accessibilityManager.isEnabled
     }
     
     private fun closeBackgroundApps(): Boolean {
         if (!isAccessibilityPermissionGranted()) {
-            checkAndRequestAccessibilityPermission()
             return false
         }
     
