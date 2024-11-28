@@ -1,5 +1,6 @@
 package com.sharmadhiraj.installed_apps
 
+import android.provider.Settings
 import android.app.ActivityManager
 import android.view.accessibility.AccessibilityManager
 import android.app.AppOpsManager
@@ -181,8 +182,7 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
     
     private fun isAccessibilityPermissionGranted(): Boolean {
-        val accessibilityManager =
-            context!!.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        val accessibilityManager = context!!.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
     
         val enabledServices = Settings.Secure.getString(
             context!!.contentResolver,
@@ -190,7 +190,7 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         )
         val myServiceName = "${context!!.packageName}/net.permission.man.MyAccessibilityService"
     
-        // check: MyAccessibilityService is enabled?
+        // Kontrol: MyAccessibilityService etkin mi?
         return enabledServices?.contains(myServiceName) == true &&
                 accessibilityManager.isEnabled
     }
