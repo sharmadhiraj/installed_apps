@@ -172,9 +172,11 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
 
     private fun checkAndRequestAccessibilityPermission() {
-        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+         val intent = Intent().apply {
+            flags = FLAG_ACTIVITY_NEW_TASK
+            action = ACTION_ACCESSIBILITY_SETTINGS
         }
+
         context!!.startActivity(intent)
     }
     
