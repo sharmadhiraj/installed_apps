@@ -72,6 +72,19 @@ class InstalledApps {
     );
   }
 
+  /// Check Usage Access Permission
+  ///
+  static Future<bool> isUsageAccessGranted() async {
+    try {
+      final bool isGranted =
+          await _channel.invokeMethod('checkUsageAccessPermission');
+      return isGranted;
+    } on PlatformException catch (e) {
+      print("Error checking Usage Access permission: ${e.message}");
+      return false;
+    }
+  }
+
   /// Opens Usage Access Settings
   ///
   static openUsageAccessSettings() {
