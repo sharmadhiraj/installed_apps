@@ -43,6 +43,21 @@ class InstalledApps {
     );
   }
 
+  /// isAccessibilityPermissionGranted
+  static Future<bool> isAccessibilityPermissionGranted() async {
+    return await _channel.invokeMethod<bool>('checkAccessibilityPermission') ?? false;
+  }
+
+  /// requestAccessibilityPermission
+  static Future<void> requestAccessibilityPermission() async {
+    await _channel.invokeMethod('requestAccessibilityPermission');
+  }
+
+  /// closeBackgroundApps
+  static Future<bool> closeBackgroundApps() async {
+    return await _channel.invokeMethod<bool>('closeBackgroundApps') ?? false;
+  }
+
   /// Getting running apps
   /// [excludeSystemApps] specifies whether to exclude system apps from the list.wld
   /// Returns a list of [AppInfo] objects representing the installed apps.
