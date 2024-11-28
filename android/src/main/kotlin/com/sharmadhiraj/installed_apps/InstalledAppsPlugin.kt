@@ -150,7 +150,8 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             }
 
             "closeBackgroundApps" -> {
-                val success = closeBackgroundApps()
+                val packageNames: List<String> = call.argument<List<String>>("package_names") ?: emptyList()
+                val success = closeBackgroundApps(packageNames)
                 result.success(success)
             }
             
@@ -195,28 +196,29 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 accessibilityManager.isEnabled
     }
     
-    private fun closeBackgroundApps(): Boolean {
+    private fun closeBackgroundApps(packages: List<String>): Boolean {
         if (!isAccessibilityPermissionGranted()) {
+            Log.e("AccessibilityPermission", "Accessibility permission is not granted.")
             return false
         }
     
-        // Kullanıcı izin verdikten sonra çalışan uygulamaları kapatır
         val activityManager = context!!.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val runningApps = activityManager.runningAppProcesses ?: return false
     
-        runningApps.forEach { processInfo ->
-            processInfo.pkgList.forEach { packageName ->
-                if (packageName != context!!.packageName) {
-                    try {
-                        activityManager.killBackgroundProcesses(packageName)
-                    } catch (e: Exception) {
-                        // Uygulama kapatılamadı
-                    }
+        packages.forEach { packageName ->
+            if (packageName != context!!.packageName) {
+                try {
+                    // Kill background process for the given package name
+                    activityManager.killBackgroundProcesses(packageName)
+                    Log.d("ClosedApp", "Successfully killed process for $packageName")
+                } catch (e: Exception) {
+                    // Log the exception if any error occurs
+                    Log.e("ErrorClosingApp", "Error closing app $packageName: ${e.message}")
                 }
             }
         }
         return true
     }
+
 
 
     private fun isUsageAccessGranted(): Boolean {
