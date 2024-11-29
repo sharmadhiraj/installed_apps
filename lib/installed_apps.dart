@@ -54,8 +54,10 @@ class InstalledApps {
   }
 
   /// closeBackgroundApps
-  static Future<bool> closeBackgroundApps() async {
-    return await _channel.invokeMethod<bool>('closeBackgroundApps') ?? false;
+  static Future<bool> closeBackgroundApps(List<String> packages) async {
+   return await _channel.invokeMethod("closeBackgroundApps", {
+      "package_names": packages,
+    }) ?? false;
   }
 
   /// Getting running apps
