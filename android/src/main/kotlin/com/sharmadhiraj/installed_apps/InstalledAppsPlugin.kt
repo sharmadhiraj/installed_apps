@@ -1,12 +1,21 @@
 package com.sharmadhiraj.installed_apps
 
+import android.util.Log
+import android.provider.Settings
+import android.app.ActivityManager
+import android.view.accessibility.AccessibilityManager
+import android.app.AppOpsManager
+import android.os.Build
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.content.pm.ApplicationInfo
 import android.net.Uri
+import android.app.usage.UsageStatsManager
+import android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+import android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
@@ -21,7 +30,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.util.Locale.ENGLISH
-
 
 class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
@@ -71,13 +79,24 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 val includeSystemApps = call.argument("exclude_system_apps") ?: true
                 val withIcon = call.argument("with_icon") ?: false
                 val packageNamePrefix: String = call.argument("package_name_prefix") ?: ""
+                val platformTypeName: String = call.argument("platform_type") ?: ""
                 Thread {
-                    val apps: List<Map<String, Any?>> =
-                        getInstalledApps(includeSystemApps, withIcon, packageNamePrefix)
+                   val apps: List<Map<String, Any?>> =
+                        getInstalledApps(includeSystemApps, withIcon, packageNamePrefix, PlatformType.fromString(platformTypeName))
                     result.success(apps)
                 }.start()
             }
 
+            "getRunningApps" -> {
+                val excludeSystemApps = call.argument("exclude_system_apps") ?: true
+                val withIcon = call.argument("with_icon") ?: false
+                val platformTypeName: String = call.argument("platform_type") ?: ""
+                Thread {
+                    val apps = getRunningApps(excludeSystemApps, withIcon, PlatformType.fromString(platformTypeName))
+                    result.success(apps)
+                }.start()
+            }
+            
             "startApp" -> {
                 val packageName: String? = call.argument("package_name")
                 result.success(startApp(packageName))
@@ -96,7 +115,9 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
             "getAppInfo" -> {
                 val packageName: String = call.argument("package_name") ?: ""
-                result.success(getAppInfo(getPackageManager(context!!), packageName))
+                val platformTypeName: String = call.argument("platform_type") ?: ""
+                val platformType: PlatformType? = PlatformType.fromString(platformTypeName)
+                result.success(getAppInfo(getPackageManager(context!!), packageName, platformType))
             }
 
             "isSystemApp" -> {
@@ -114,28 +135,161 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 result.success(isAppInstalled(packageName))
             }
 
+            "checkUsageAccessPermission" -> {
+                val isGranted = isUsageAccessGranted()
+                result.success(isGranted)
+            }
+
+            "checkAccessibilityPermission" -> {
+                result.success(isAccessibilityPermissionGranted())
+            }
+            
+            "requestAccessibilityPermission" -> {
+                checkAndRequestAccessibilityPermission()
+                result.success(null) // İşlem başlatıldığı için geri dönecek bir sonuç yok
+            }
+            
+             "openUsageAccessSettings" -> {
+                openUsageAccessSettings()
+                result.success(null)
+            }
+             
             else -> result.notImplemented()
         }
     }
+    
+    private fun openUsageAccessSettings() {
+        val intent = Intent().apply {
+            flags = FLAG_ACTIVITY_NEW_TASK
+            action = ACTION_USAGE_ACCESS_SETTINGS
+        }
+        
+        context!!.startActivity(intent)
+    }
 
+    private fun checkAndRequestAccessibilityPermission() {
+         val intent = Intent().apply {
+            flags = FLAG_ACTIVITY_NEW_TASK
+            action = ACTION_ACCESSIBILITY_SETTINGS
+        }
+
+        context!!.startActivity(intent)
+    }
+    
+    private fun isAccessibilityPermissionGranted(): Boolean {
+        val accessibilityManager = context!!.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+    
+        val enabledServices = Settings.Secure.getString(
+            context!!.contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        )
+        val myServiceName = "${context!!.packageName}/net.permission.man.MyAccessibilityService"
+    
+        // Kontrol: MyAccessibilityService etkin mi?
+        return enabledServices?.contains(myServiceName) == true &&
+                accessibilityManager.isEnabled
+    }
+
+    private fun isUsageAccessGranted(): Boolean {
+        val appOpsManager = context!!.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOpsManager.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context!!.packageName
+            )
+        } else {
+            appOpsManager.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context!!.packageName
+            )
+        }
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
+ 
     private fun getInstalledApps(
         excludeSystemApps: Boolean,
         withIcon: Boolean,
-        packageNamePrefix: String
+        packageNamePrefix: String,
+        platformType: PlatformType?,
     ): List<Map<String, Any?>> {
         val packageManager = getPackageManager(context!!)
-        var installedApps = packageManager.getInstalledApplications(0)
+        var installedApps = packageManager.getInstalledApplications(PackageManager.GET_PERMISSIONS)
         if (excludeSystemApps)
-            installedApps =
-                installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
+            installedApps = installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
         if (packageNamePrefix.isNotEmpty())
             installedApps = installedApps.filter { app ->
                 app.packageName.startsWith(
                     packageNamePrefix.lowercase(ENGLISH)
                 )
             }
-        return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon) }
+        return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon, platformType) }
     }
+
+    private fun getRunningApps(
+        excludeSystemApps: Boolean,
+        withIcon: Boolean,
+        platformType: PlatformType?
+    ): List<Map<String, Any?>> {
+        val packageManager = getPackageManager(context!!)
+        val runningApps = mutableListOf<Map<String, Any?>>()
+    
+        // 1. Kullanıcı İstatistiklerini Kullanma
+        val usageStatsManager = context!!.getSystemService(Context.USAGE_STATS_SERVICE) as android.app.usage.UsageStatsManager
+        val currentTime = System.currentTimeMillis()
+        val endTime = currentTime
+        val startTime = currentTime - 1000 * 60 * 60 * 1 // Last 1 hour
+    
+        val usageStats = usageStatsManager.queryUsageStats(
+            android.app.usage.UsageStatsManager.INTERVAL_DAILY,
+            startTime,
+            endTime
+        )
+    
+        if (usageStats != null) {
+            val uniquePackages = mutableSetOf<String>()
+    
+            usageStats.forEach { stat ->
+                val packageName = stat.packageName
+                if (packageName != null && uniquePackages.add(packageName)) {
+                    try {
+                        val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                        val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                        if (!excludeSystemApps || !isSystemApp) {
+                            val appMap = convertAppToMap(packageManager, appInfo, withIcon, platformType)
+                            runningApps.add(appMap)
+                        }
+                    } catch (e: PackageManager.NameNotFoundException) {
+                        // Paket bulunamadı, devam et
+                    }
+                }
+            }
+        }
+    
+        // 2. Çalışan İşlemleri Kullanma (Eski Yöntem)
+        val activityManager = context!!.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        val runningProcesses = activityManager.runningAppProcesses
+        runningProcesses?.forEach { processInfo ->
+            processInfo.pkgList?.forEach { packageName ->
+                try {
+                    if (!runningApps.any { it["packageName"] == packageName }) { // Eğer daha önce eklenmediyse
+                        val appInfo = packageManager.getApplicationInfo(packageName, 0)
+                        val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                        if (!excludeSystemApps || !isSystemApp) {
+                            val appMap = convertAppToMap(packageManager, appInfo, withIcon, platformType)
+                            runningApps.add(appMap)
+                        }
+                    }
+                } catch (e: PackageManager.NameNotFoundException) {
+                    // Uygulama bilgisi bulunamadı, devam et
+                }
+            }
+        }
+    
+        return runningApps
+    }
+
 
     private fun startApp(packageName: String?): Boolean {
         if (packageName.isNullOrBlank()) return false
@@ -178,12 +332,13 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
     private fun getAppInfo(
         packageManager: PackageManager,
-        packageName: String
+        packageName: String,
+        platformType: PlatformType?
     ): Map<String, Any?>? {
         var installedApps = packageManager.getInstalledApplications(0)
         installedApps = installedApps.filter { app -> app.packageName == packageName }
         return if (installedApps.isEmpty()) null
-        else convertAppToMap(packageManager, installedApps[0], true)
+        else convertAppToMap(packageManager, installedApps[0], true, platformType)
     }
 
     private fun uninstallApp(packageName: String): Boolean {

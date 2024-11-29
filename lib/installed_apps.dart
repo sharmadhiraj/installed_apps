@@ -10,12 +10,14 @@ class InstalledApps {
   /// [excludeSystemApps] specifies whether to exclude system apps from the list.
   /// [withIcon] specifies whether to include app icons in the list.
   /// [packageNamePrefix] is an optional parameter to filter apps with package names starting with a specific prefix.
+  /// [platformType] is an optional parameter to set the app type. Default is [AppPlatformType.flutter].
   ///
   /// Returns a list of [AppInfo] objects representing the installed apps.
   static Future<List<AppInfo>> getInstalledApps([
     bool excludeSystemApps = true,
     bool withIcon = false,
     String packageNamePrefix = "",
+    BuiltWith platformType = BuiltWith.flutter,
   ]) async {
     dynamic apps = await _channel.invokeMethod(
       "getInstalledApps",
@@ -23,6 +25,7 @@ class InstalledApps {
         "exclude_system_apps": excludeSystemApps,
         "with_icon": withIcon,
         "package_name_prefix": packageNamePrefix,
+        "platform_type": platformType.name,
       },
     );
     return AppInfo.parseList(apps);
@@ -40,6 +43,42 @@ class InstalledApps {
     );
   }
 
+  /// isAccessibilityPermissionGranted
+  static Future<bool> isAccessibilityPermissionGranted() async {
+    return await _channel.invokeMethod<bool>('checkAccessibilityPermission') ?? false;
+  }
+
+  /// requestAccessibilityPermission
+  static Future<void> requestAccessibilityPermission() async {
+    await _channel.invokeMethod('requestAccessibilityPermission');
+  }
+
+  /// closeBackgroundApps
+  static Future<bool> closeBackgroundApps(List<String> packages) async {
+   return await _channel.invokeMethod("closeBackgroundApps", {
+      "package_names": packages,
+    }) ?? false;
+  }
+
+  /// Getting running apps
+  /// [excludeSystemApps] specifies whether to exclude system apps from the list.wld
+  /// Returns a list of [AppInfo] objects representing the installed apps.
+  static Future<List<AppInfo>> getRunningApps({
+    bool excludeSystemApps = true,
+    bool withIcon = true,
+  }) async {
+      dynamic apps = await _channel.invokeMethod(
+        "getRunningApps",
+        {
+          "exclude_system_apps": excludeSystemApps,
+          "with_icon": withIcon, 
+        },
+      );
+
+      return AppInfo.parseList(apps);
+  }
+
+
   /// Opens the settings screen (App Info) of an app with the specified package name.
   ///
   /// [packageName] is the package name of the app whose settings screen should be opened.
@@ -50,6 +89,27 @@ class InstalledApps {
     );
   }
 
+  /// Check Usage Access Permission
+  ///
+  static Future<bool> isUsageAccessGranted() async {
+    try {
+      final bool isGranted =
+          await _channel.invokeMethod('checkUsageAccessPermission');
+      return isGranted;
+    } on PlatformException catch (e) {
+      print("Error checking Usage Access permission: ${e.message}");
+      return false;
+    }
+  }
+
+  /// Opens Usage Access Settings
+  ///
+  static openUsageAccessSettings() {
+    _channel.invokeMethod(
+      "openUsageAccessSettings"
+    );
+  }
+  
   /// Displays a toast message on the device.
   ///
   /// [message] is the message to display.
@@ -69,10 +129,16 @@ class InstalledApps {
   /// [packageName] is the package name of the app to retrieve information for.
   ///
   /// Returns [AppInfo] for the given package name, or null if not found.
-  static Future<AppInfo?> getAppInfo(String packageName) async {
+  static Future<AppInfo?> getAppInfo(
+    String packageName,
+    BuiltWith? platformType,
+  ) async {
     var app = await _channel.invokeMethod(
       "getAppInfo",
-      {"package_name": packageName},
+      {
+        "package_name": packageName,
+        "platform_type": platformType?.name ?? '',
+      },
     );
     if (app == null) {
       return null;

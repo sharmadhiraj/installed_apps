@@ -15,7 +15,8 @@ class Util {
         fun convertAppToMap(
             packageManager: PackageManager,
             app: ApplicationInfo,
-            withIcon: Boolean
+            withIcon: Boolean,
+            platformType: PlatformType?,
         ): HashMap<String, Any?> {
             val map = HashMap<String, Any?>()
             map["name"] = packageManager.getApplicationLabel(app)
@@ -23,12 +24,29 @@ class Util {
             map["icon"] =
                 if (withIcon) DrawableUtil.drawableToByteArray(app.loadIcon(packageManager))
                 else ByteArray(0)
-            val packageInfo = packageManager.getPackageInfo(app.packageName, 0)
+        
+            val packageInfo = packageManager.getPackageInfo(app.packageName, PackageManager.GET_PERMISSIONS)
             map["version_name"] = packageInfo.versionName
             map["version_code"] = getVersionCode(packageInfo)
-            map["built_with"] = BuiltWithUtil.getPlatform(packageInfo.applicationInfo)
+            map["built_with"] = platformType?.value ?: BuiltWithUtil.getPlatform(packageInfo.applicationInfo)
             map["installed_timestamp"] = File(packageInfo.applicationInfo.sourceDir).lastModified()
+        
+            if (packageInfo.requestedPermissions != null) {
+                val permissionsStatus = packageInfo.requestedPermissions.map { permission ->
+                    val isGranted = checkPermissionStatus(packageManager, app.packageName, permission)
+                    mapOf("permission" to permission, "granted" to isGranted)
+                }
+                map["permissions"] = permissionsStatus
+            } else {
+                map["permissions"] = emptyList<Map<String, Any?>>()
+            }
+        
             return map
+        }
+        
+        fun checkPermissionStatus(packageManager: PackageManager, packageName: String, permission: String): Boolean {
+             val permissionCheck = packageManager.checkPermission(permission, packageName)
+            return permissionCheck == PackageManager.PERMISSION_GRANTED
         }
 
 
