@@ -21,7 +21,6 @@ import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
 import com.sharmadhiraj.installed_apps.Util.Companion.convertAppToMap
 import com.sharmadhiraj.installed_apps.Util.Companion.getPackageManager
-import com.sharmadhiraj.installed_apps.MyAccessibilityService
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -149,12 +148,6 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 checkAndRequestAccessibilityPermission()
                 result.success(null) // İşlem başlatıldığı için geri dönecek bir sonuç yok
             }
-
-            "closeBackgroundApps" -> {
-                val packageNames: List<String> = call.argument<List<String>>("package_names") ?: emptyList()
-                val success = closeBackgroundApps(packageNames)
-                result.success(success)
-            }
             
              "openUsageAccessSettings" -> {
                 openUsageAccessSettings()
@@ -195,26 +188,6 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         // Kontrol: MyAccessibilityService etkin mi?
         return enabledServices?.contains(myServiceName) == true &&
                 accessibilityManager.isEnabled
-    }
-    
-    private fun closeBackgroundApps(packages: List<String>): Boolean {
-        if (!isAccessibilityPermissionGranted()) {
-            Log.e("AccessibilityPermission", "Accessibility permission is not granted.")
-            return false
-        }
-    
-        val accessibilityService = MyAccessibilityService()
-        packages.forEach { packageName ->
-            if (packageName != context!!.packageName) {
-                val result = accessibilityService.closeAppInBackground(packageName)
-                if (result) {
-                    Log.d("ClosedApp", "Successfully stopped $packageName")
-                } else {
-                    Log.e("ClosedApp", "Failed to stop $packageName")
-                }
-            }
-        }
-        return true
     }
 
     private fun isUsageAccessGranted(): Boolean {
