@@ -203,24 +203,19 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             return false
         }
     
-        val activityManager = context!!.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-    
+        val accessibilityService = MyAccessibilityService()
         packages.forEach { packageName ->
             if (packageName != context!!.packageName) {
-                try {
-                    // Kill background process for the given package name
-                    activityManager.killBackgroundProcesses(packageName)
-                    Log.d("ClosedApp", "Successfully killed process for $packageName")
-                } catch (e: Exception) {
-                    // Log the exception if any error occurs
-                    Log.e("ErrorClosingApp", "Error closing app $packageName: ${e.message}")
+                val result = accessibilityService.closeAppInBackground(packageName)
+                if (result) {
+                    Log.d("ClosedApp", "Successfully stopped $packageName")
+                } else {
+                    Log.e("ClosedApp", "Failed to stop $packageName")
                 }
             }
         }
         return true
     }
-
-
 
     private fun isUsageAccessGranted(): Boolean {
         val appOpsManager = context!!.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
