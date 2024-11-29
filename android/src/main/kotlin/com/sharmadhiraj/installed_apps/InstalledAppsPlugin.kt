@@ -1,5 +1,6 @@
 package com.sharmadhiraj.installed_apps
 
+import android.util.Log
 import android.provider.Settings
 import android.app.ActivityManager
 import android.view.accessibility.AccessibilityManager
