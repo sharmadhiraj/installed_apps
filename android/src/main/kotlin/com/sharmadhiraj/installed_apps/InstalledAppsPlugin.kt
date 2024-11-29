@@ -21,6 +21,7 @@ import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
 import com.sharmadhiraj.installed_apps.Util.Companion.convertAppToMap
 import com.sharmadhiraj.installed_apps.Util.Companion.getPackageManager
+import com.sharmadhiraj.installed_apps.MyAccessibilityService
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -30,7 +31,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.util.Locale.ENGLISH
-
 
 class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
