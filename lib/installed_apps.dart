@@ -28,6 +28,31 @@ class InstalledApps {
     return AppInfo.parseList(apps);
   }
 
+  /// Named method for [getInstalledApps]
+  /// Named parameters: [excludeSystemApps], [withIcon], [packageNamePrefix]
+  /// 
+  /// Example 1: Default behavior
+  /// List<AppInfo> apps = await geInstalledAppsNamed();
+  /// 
+  /// Example 2: Include system apps
+  /// apps = await geInstalledAppsNamed(excludeSystemApps: false);
+  /// 
+  /// Example 3: Fetch with icons and specific package prefix
+  /// apps = await geInstalledAppsNamed(
+  ///  withIcon: true,
+  ///  packageNamePrefix: "com.example",
+  /// );
+  ///
+  /// Returns a list of [AppInfo] objects representing the installed apps.
+  /// Internally User [getInstalledApps] method.
+  static Future<List<AppInfo>> geInstalledAppsNamed({
+    bool excludeSystemApps = true,
+    bool withIcon = false,
+    String packageNamePrefix = "",
+  }) async {
+    return getInstalledApps(excludeSystemApps, withIcon, packageNamePrefix);
+  }
+
   /// Launches an app with the specified package name.
   ///
   /// [packageName] is the package name of the app to launch.

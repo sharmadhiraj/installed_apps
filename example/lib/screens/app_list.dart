@@ -18,7 +18,7 @@ class AppListScreen extends StatelessWidget {
 
   Widget _buildBody() {
     return FutureBuilder<List<AppInfo>>(
-      future: InstalledApps.getInstalledApps(true, true),
+      future: InstalledApps.geInstalledAppsNamed(withIcon: true, excludeSystemApps: true), // using named method instead of positional
       builder: (
         BuildContext buildContext,
         AsyncSnapshot<List<AppInfo>> snapshot,

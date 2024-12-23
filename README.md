@@ -31,6 +31,15 @@ List<AppInfo> apps = await InstalledApps.getInstalledApps(
 
 Use `packageNamePrefix` to filter apps with package names starting with a specific prefix.
 
+#### For Named Parameters, use `getInstalledAppsNamed()`
+```dart
+List<AppInfo> apps = await InstalledApps.getInstalledAppsNamed(
+  withIcon: true,
+  packageNamePrefix: "com.example",
+);
+```
+
+
 #### Get App Info with Package Name
 
 ``` dart
