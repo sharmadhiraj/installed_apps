@@ -1,3 +1,7 @@
+## 3.0.0
+
+Remove registerWith method from the plugin class
+
 ## 2.0.0
 
 * Starting from this version QUERY_ALL_PACKAGES has been removed from manifest. You must add it manually for it to work for you in case you want to query all packages. This was done to prevent app rejection when submitting to playstore.
