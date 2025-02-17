@@ -19,21 +19,13 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.util.Locale.ENGLISH
-
 
 class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
     companion object {
 
         var context: Context? = null
-
-        @JvmStatic
-        fun registerWith(registrar: Registrar) {
-            context = registrar.context()
-            register(registrar.messenger())
-        }
 
         @JvmStatic
         fun register(messenger: BinaryMessenger) {
