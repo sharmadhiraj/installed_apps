@@ -274,7 +274,6 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             context!!.packageName
         )
         if (mode == AppOpsManager.MODE_ALLOWED) {
-            Toast.makeText(context, "Usage access already granted", Toast.LENGTH_SHORT).show()
             return
         }
         val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
