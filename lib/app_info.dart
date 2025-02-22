@@ -8,6 +8,7 @@ class AppInfo {
   int versionCode;
   BuiltWith builtWith;
   int installedTimestamp;
+  bool dailyLimitEnded;
 
   AppInfo({
     required this.name,
@@ -17,6 +18,7 @@ class AppInfo {
     required this.versionCode,
     required this.builtWith,
     required this.installedTimestamp,
+    required this.dailyLimitEnded,
   });
 
   factory AppInfo.create(dynamic data) {
@@ -28,6 +30,7 @@ class AppInfo {
       versionCode: data["version_code"] ?? 1,
       builtWith: parseBuiltWith(data["built_with"]),
       installedTimestamp: data["installed_timestamp"] ?? 0,
+      dailyLimitEnded: data["daily_limit_ended"] ?? false, // added
     );
   }
 

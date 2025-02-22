@@ -1,5 +1,6 @@
 package com.sharmadhiraj.installed_apps
 
+import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -39,8 +40,7 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         register(binding.binaryMessenger)
     }
 
-    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    }
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {}
 
     override fun onAttachedToActivity(activityPluginBinding: ActivityPluginBinding) {
         context = activityPluginBinding.activity
@@ -100,6 +100,14 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 val packageName: String = call.argument("package_name") ?: ""
                 result.success(isAppInstalled(packageName))
             }
+            "getMostUsedApps" -> {
+                // New functionality: get most used apps
+                val limit = call.argument<Int>("limit") ?: 5
+                Thread {
+                    val apps: List<Map<String, Any?>> = getMostUsedApps(limit)
+                    result.success(apps)
+                }.start()
+            }
             else -> result.notImplemented()
         }
     }
@@ -127,7 +135,32 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             val launchablePackageNames = launchableApps.map { it.activityInfo.packageName }.toSet()
             installedApps = installedApps.filter { app -> launchablePackageNames.contains(app.packageName) }
         }
-        return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon) }
+        
+        // Define the daily usage limit in milliseconds (6 hours)
+        val DAILY_USAGE_LIMIT_MS = 6 * 60 * 60 * 1000L
+
+        // Retrieve usage stats for the last 24 hours
+        val usageStatsManager = context!!.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+        val endTime = System.currentTimeMillis()
+        val beginTime = endTime - (1000 * 60 * 60 * 24)
+        val usageStatsList = usageStatsManager?.queryUsageStats(
+            UsageStatsManager.INTERVAL_DAILY,
+            beginTime,
+            endTime
+        )
+        // Create a map from package name to total foreground time
+        val usageMap = mutableMapOf<String, Long>()
+        usageStatsList?.forEach { usage ->
+            usageMap[usage.packageName] = usage.totalTimeInForeground
+        }
+        
+        // Convert each app into a map and add the "daily_limit_ended" flag
+        return installedApps.map { app ->
+            val appMap = convertAppToMap(packageManager, app, withIcon)
+            val foregroundTime = usageMap[app.packageName] ?: 0L
+            appMap["daily_limit_ended"] = (foregroundTime >= DAILY_USAGE_LIMIT_MS)
+            appMap
+        }
     }
 
     private fun startApp(packageName: String?): Boolean {
@@ -193,6 +226,38 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             true
         } catch (e: PackageManager.NameNotFoundException) {
             false
+        }
+    }
+
+    private fun getMostUsedApps(limit: Int): List<Map<String, Any?>> {
+        // Define the daily usage limit in milliseconds (6 hours)
+        val DAILY_USAGE_LIMIT_MS = 6 * 60 * 60 * 1000L
+
+        // Retrieve usage stats for the last 24 hours
+        val usageStatsManager = context!!.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val endTime = System.currentTimeMillis()
+        val beginTime = endTime - (1000 * 60 * 60 * 24)
+        val usageStatsList = usageStatsManager.queryUsageStats(
+            UsageStatsManager.INTERVAL_DAILY,
+            beginTime,
+            endTime
+        )
+        if (usageStatsList.isNullOrEmpty()) {
+            return emptyList()
+        }
+        // Sort apps by total foreground time in descending order and take the top [limit] apps.
+        val sortedList = usageStatsList.sortedByDescending { it.totalTimeInForeground }
+        val packageManager = getPackageManager(context!!)
+        return sortedList.take(limit).mapNotNull { usage ->
+            try {
+                val appInfo = packageManager.getApplicationInfo(usage.packageName, 0)
+                // Create the app map and add the "daily_limit_ended" flag
+                val appMap = convertAppToMap(packageManager, appInfo, false)
+                appMap["daily_limit_ended"] = usage.totalTimeInForeground >= DAILY_USAGE_LIMIT_MS
+                appMap
+            } catch (e: PackageManager.NameNotFoundException) {
+                null
+            }
         }
     }
 }

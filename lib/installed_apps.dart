@@ -119,4 +119,17 @@ class InstalledApps {
       {"package_name": packageName},
     );
   }
+
+  /// Retrieves the most used apps based on usage stats from the last 24 hours.
+  ///
+  /// [limit] specifies the maximum number of apps to return.
+  ///
+  /// Returns a list of [AppInfo] objects representing the most used apps.
+  static Future<List<AppInfo>> getMostUsedApps({int limit = 5}) async {
+    dynamic apps = await _channel.invokeMethod(
+      "getMostUsedApps",
+      {"limit": limit},
+    );
+    return AppInfo.parseList(apps);
+  }
 }
