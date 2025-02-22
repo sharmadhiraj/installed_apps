@@ -1,15 +1,14 @@
+import 'package:example/screens/app_info.dart';
 import 'package:flutter/material.dart';
 import 'package:installed_apps/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
-import 'package:installed_apps_example/screens/app_info.dart';
 
 class AppListScreen extends StatelessWidget {
+  const AppListScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(),
-    );
+    return Scaffold(appBar: _buildAppBar(), body: _buildBody());
   }
 
   AppBar _buildAppBar() {
@@ -48,10 +47,11 @@ class AppListScreen extends StatelessWidget {
         ),
         title: Text(app.name),
         subtitle: Text(app.getVersionInfo()),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AppInfoScreen(app: app)),
-        ),
+        onTap:
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AppInfoScreen(app: app)),
+            ),
       ),
     );
   }

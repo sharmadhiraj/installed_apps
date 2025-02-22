@@ -1,9 +1,11 @@
+import 'package:example/screens/home.dart';
 import 'package:flutter/material.dart';
-import 'package:installed_apps_example/screens/home.dart';
 
 void main() => runApp(App());
 
 class App extends MaterialApp {
+  const App({super.key});
+
   @override
   Widget get home => HomeScreen();
 

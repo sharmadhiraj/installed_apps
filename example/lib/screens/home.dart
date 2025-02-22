@@ -1,16 +1,15 @@
+import 'package:example/screens/app_info.dart';
+import 'package:example/screens/app_list.dart';
+import 'package:example/util/common.dart';
 import 'package:flutter/material.dart';
 import 'package:installed_apps/installed_apps.dart';
-import 'package:installed_apps_example/screens/app_info.dart';
-import 'package:installed_apps_example/screens/app_list.dart';
-import 'package:installed_apps_example/util/common.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(context),
-    );
+    return Scaffold(appBar: _buildAppBar(), body: _buildBody(context));
   }
 
   AppBar _buildAppBar() {
@@ -61,7 +60,8 @@ class HomeScreen extends StatelessWidget {
           "Uninstall app",
           "Uninstall app with package name",
           () => InstalledApps.uninstallApp(
-              "com.sharmadhiraj.installed_apps_example"),
+            "com.sharmadhiraj.installed_apps_example",
+          ),
         ),
         _buildListItem(
           context,
