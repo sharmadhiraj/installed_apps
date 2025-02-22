@@ -132,4 +132,9 @@ class InstalledApps {
     );
     return AppInfo.parseList(apps);
   }
+
+  /// Prompts the user to enable usage access by launching the usage access settings.
+  static Future<void> promptUsageAccess() async {
+    await _channel.invokeMethod("promptUsageAccess");
+  }
 }

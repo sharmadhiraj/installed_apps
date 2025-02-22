@@ -108,6 +108,10 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                     result.success(apps)
                 }.start()
             }
+            "promptUsageAccess" -> {
+                promptUsageAccess()
+                result.success(null)
+            }
             else -> result.notImplemented()
         }
     }
@@ -259,5 +263,13 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 null
             }
         }
+    }
+
+    private fun promptUsageAccess() {
+        // Launch usage access settings so the user can enable usage stats permission
+        val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+            flags = FLAG_ACTIVITY_NEW_TASK
+        }
+        context!!.startActivity(intent)
     }
 }
