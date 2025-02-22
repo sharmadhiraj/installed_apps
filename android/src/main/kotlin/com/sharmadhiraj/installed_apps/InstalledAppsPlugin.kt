@@ -26,9 +26,6 @@ import java.util.Calendar
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import com.sharmadhiraj.installed_apps.MyDeviceAdminReceiver
-
-class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
-
     companion object {
         var context: Context? = null
         private const val CHANNEL_NAME = "installed_apps"
@@ -254,15 +251,12 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             try {
                 val appInfo = packageManager.getApplicationInfo(usageStat.packageName, 0)
                 val appLabel = packageManager.getApplicationLabel(appInfo).toString()
-                // Determine daily_limit_ended flag:
-                val dailyLimitEnded = (usageStat.totalTimeInForeground >= DAILY_USAGE_LIMIT_MS) ||
-                                      isAppRestrictedByAdmin(context!!, usageStat.packageName)
                 // Create base map
                 val appMap = mutableMapOf<String, Any?>(
                     "name" to appLabel,
                     "package_name" to usageStat.packageName,
                     "total_time_in_foreground" to usageStat.totalTimeInForeground,
-                    "daily_limit_ended" to dailyLimitEnded
+                    "daily_limit_ended" to (usageStat.totalTimeInForeground >= DAILY_USAGE_LIMIT_MS)
                 )
                 // If withIcon is true, merge icon info from convertAppToMap
                 if (withIcon) {
@@ -281,6 +275,12 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         val mode = appOps.checkOpNoThrow(
             AppOpsManager.OPSTR_GET_USAGE_STATS,
             android.os.Process.myUid(),
+            context.packageName
+        )
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun promptUsageAccess() {
         if (!hasUsageAccessPermission(context!!)) {
             // Launch usage access settings so the user can enable usage stats permission
             val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
