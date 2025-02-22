@@ -123,12 +123,14 @@ class InstalledApps {
   /// Retrieves the most used apps based on usage stats from the last 24 hours.
   ///
   /// [limit] specifies the maximum number of apps to return.
+  /// [withIcon] specifies whether to include app icons in the list.
   ///
   /// Returns a list of [AppInfo] objects representing the most used apps.
-  static Future<List<AppInfo>> getMostUsedApps({int limit = 5}) async {
+  static Future<List<AppInfo>> getMostUsedApps(
+      {int limit = 5, bool withIcon = false}) async {
     dynamic apps = await _channel.invokeMethod(
       "getMostUsedApps",
-      {"limit": limit},
+      {"limit": limit, "with_icon": withIcon},
     );
     return AppInfo.parseList(apps);
   }

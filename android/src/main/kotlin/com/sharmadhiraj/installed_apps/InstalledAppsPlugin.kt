@@ -22,10 +22,9 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import java.util.Locale.ENGLISH
 import android.app.AppOpsManager
-import java.util.Calendar
-import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
-import com.sharmadhiraj.installed_apps.MyDeviceAdminReceiver
+
+class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
+
     companion object {
         var context: Context? = null
         private const val CHANNEL_NAME = "installed_apps"
@@ -103,7 +102,6 @@ import com.sharmadhiraj.installed_apps.MyDeviceAdminReceiver
                 result.success(isAppInstalled(packageName))
             }
             "getMostUsedApps" -> {
-                // New functionality: get most used apps
                 val limit = call.argument<Int>("limit") ?: 5
                 val withIcon = call.argument<Boolean>("with_icon") ?: false
                 Thread {
@@ -239,30 +237,28 @@ import com.sharmadhiraj.installed_apps.MyDeviceAdminReceiver
     private fun getMostUsedApps(limit: Int, withIcon: Boolean): List<Map<String, Any?>> {
         val DAILY_USAGE_LIMIT_MS = 6 * 60 * 60 * 1000L
         val usageStatsManager = context!!.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_YEAR, -1) // Get stats for the last day
-        val usageStatsMap = usageStatsManager.queryAndAggregateUsageStats(
-            calendar.timeInMillis,
-            System.currentTimeMillis()
+        val endTime = System.currentTimeMillis()
+        val beginTime = endTime - (1000 * 60 * 60 * 24)
+        val usageStatsList = usageStatsManager.queryUsageStats(
+            UsageStatsManager.INTERVAL_DAILY,
+            beginTime,
+            endTime
         )
-        val sortedStats = usageStatsMap.values.sortedByDescending { it.totalTimeInForeground }
-        val packageManager = context!!.packageManager
-        return sortedStats.take(limit).mapNotNull { usageStat ->
+        
+        // Debug log: print the size of the result to logcat:
+        println("UsageStatsList size: ${usageStatsList?.size}")
+
+        if (usageStatsList.isNullOrEmpty()) {
+            return emptyList()
+        }
+        
+        val sortedList = usageStatsList.sortedByDescending { it.totalTimeInForeground }
+        val packageManager = getPackageManager(context!!)
+        return sortedList.take(limit).mapNotNull { usage ->
             try {
-                val appInfo = packageManager.getApplicationInfo(usageStat.packageName, 0)
-                val appLabel = packageManager.getApplicationLabel(appInfo).toString()
-                // Create base map
-                val appMap = mutableMapOf<String, Any?>(
-                    "name" to appLabel,
-                    "package_name" to usageStat.packageName,
-                    "total_time_in_foreground" to usageStat.totalTimeInForeground,
-                    "daily_limit_ended" to (usageStat.totalTimeInForeground >= DAILY_USAGE_LIMIT_MS)
-                )
-                // If withIcon is true, merge icon info from convertAppToMap
-                if (withIcon) {
-                    val mapWithIcon = convertAppToMap(packageManager, appInfo, true)
-                    appMap["icon"] = mapWithIcon["icon"]
-                }
+                val appInfo = packageManager.getApplicationInfo(usage.packageName, 0)
+                val appMap = convertAppToMap(packageManager, appInfo, withIcon)
+                appMap["daily_limit_ended"] = usage.totalTimeInForeground >= DAILY_USAGE_LIMIT_MS
                 appMap
             } catch (e: PackageManager.NameNotFoundException) {
                 null
@@ -270,23 +266,20 @@ import com.sharmadhiraj.installed_apps.MyDeviceAdminReceiver
         }
     }
 
-    private fun hasUsageAccessPermission(context: Context): Boolean {
-        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+    private fun promptUsageAccess() {
+        val appOps = context!!.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
         val mode = appOps.checkOpNoThrow(
             AppOpsManager.OPSTR_GET_USAGE_STATS,
             android.os.Process.myUid(),
-            context.packageName
+            context!!.packageName
         )
-        return mode == AppOpsManager.MODE_ALLOWED
-    }
-
-    private fun promptUsageAccess() {
-        if (!hasUsageAccessPermission(context!!)) {
-            // Launch usage access settings so the user can enable usage stats permission
-            val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-                flags = FLAG_ACTIVITY_NEW_TASK
-            }
-            context!!.startActivity(intent)
+        if (mode == AppOpsManager.MODE_ALLOWED) {
+            Toast.makeText(context, "Usage access already granted", Toast.LENGTH_SHORT).show()
+            return
         }
+        val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+            flags = FLAG_ACTIVITY_NEW_TASK
+        }
+        context!!.startActivity(intent)
     }
 }
