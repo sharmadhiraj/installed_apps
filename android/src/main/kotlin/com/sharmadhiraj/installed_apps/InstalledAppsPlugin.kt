@@ -19,7 +19,7 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.PluginRegistry.Registrar
+import io.flutter.plugin.common.PluginRegistry
 import java.util.Locale.ENGLISH
 
 
@@ -28,16 +28,20 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     companion object {
 
         var context: Context? = null
+        private const val CHANNEL_NAME = "installed_apps"
+        private var channel: MethodChannel? = null
 
         @JvmStatic
-        fun registerWith(registrar: Registrar) {
+        fun registerWith(registrar: PluginRegistry.Registrar) {
+            val plugin = InstalledAppsPlugin()
             context = registrar.context()
-            register(registrar.messenger())
+            channel = MethodChannel(registrar.messenger(), CHANNEL_NAME)
+            channel?.setMethodCallHandler(plugin)
         }
 
         @JvmStatic
         fun register(messenger: BinaryMessenger) {
-            val channel = MethodChannel(messenger, "installed_apps")
+            val channel = MethodChannel(messenger, CHANNEL_NAME)
             channel.setMethodCallHandler(InstalledAppsPlugin())
         }
     }

@@ -1,9 +1,9 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/Users/dhirajsharma/Drive/SDKs/flutter"
-export "FLUTTER_APPLICATION_PATH=/Users/dhirajsharma/Drive/Desk/Personal/Projects/Flutter/installed_apps/example"
+export "FLUTTER_ROOT=D:\Devolpnent Flutter\sdks\flutter"
+export "FLUTTER_APPLICATION_PATH=D:\Devolpnent Flutter\packages\installed_apps\example"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
-export "FLUTTER_TARGET=lib/main.dart"
+export "FLUTTER_TARGET=lib\main.dart"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"
 export "FLUTTER_BUILD_NUMBER=1"
