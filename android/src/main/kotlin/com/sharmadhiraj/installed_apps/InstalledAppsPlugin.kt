@@ -23,6 +23,9 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import java.util.Locale.ENGLISH
 import android.app.AppOpsManager
 import java.util.Calendar
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
+import com.sharmadhiraj.installed_apps.MyDeviceAdminReceiver
 
 class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
@@ -105,8 +108,9 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             "getMostUsedApps" -> {
                 // New functionality: get most used apps
                 val limit = call.argument<Int>("limit") ?: 5
+                val withIcon = call.argument<Boolean>("with_icon") ?: false
                 Thread {
-                    val apps: List<Map<String, Any?>> = getMostUsedApps(limit)
+                    val apps: List<Map<String, Any?>> = getMostUsedApps(limit, withIcon)
                     result.success(apps)
                 }.start()
             }
@@ -235,7 +239,7 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         }
     }
 
-    private fun getMostUsedApps(limit: Int): List<Map<String, Any?>> {
+    private fun getMostUsedApps(limit: Int, withIcon: Boolean): List<Map<String, Any?>> {
         val DAILY_USAGE_LIMIT_MS = 6 * 60 * 60 * 1000L
         val usageStatsManager = context!!.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val calendar = Calendar.getInstance()
@@ -250,12 +254,22 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             try {
                 val appInfo = packageManager.getApplicationInfo(usageStat.packageName, 0)
                 val appLabel = packageManager.getApplicationLabel(appInfo).toString()
-                mutableMapOf<String, Any?>(
+                // Determine daily_limit_ended flag:
+                val dailyLimitEnded = (usageStat.totalTimeInForeground >= DAILY_USAGE_LIMIT_MS) ||
+                                      isAppRestrictedByAdmin(context!!, usageStat.packageName)
+                // Create base map
+                val appMap = mutableMapOf<String, Any?>(
                     "name" to appLabel,
                     "package_name" to usageStat.packageName,
                     "total_time_in_foreground" to usageStat.totalTimeInForeground,
-                    "daily_limit_ended" to (usageStat.totalTimeInForeground >= DAILY_USAGE_LIMIT_MS)
+                    "daily_limit_ended" to dailyLimitEnded
                 )
+                // If withIcon is true, merge icon info from convertAppToMap
+                if (withIcon) {
+                    val mapWithIcon = convertAppToMap(packageManager, appInfo, true)
+                    appMap["icon"] = mapWithIcon["icon"]
+                }
+                appMap
             } catch (e: PackageManager.NameNotFoundException) {
                 null
             }
@@ -267,12 +281,6 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
         val mode = appOps.checkOpNoThrow(
             AppOpsManager.OPSTR_GET_USAGE_STATS,
             android.os.Process.myUid(),
-            context.packageName
-        )
-        return mode == AppOpsManager.MODE_ALLOWED
-    }
-
-    private fun promptUsageAccess() {
         if (!hasUsageAccessPermission(context!!)) {
             // Launch usage access settings so the user can enable usage stats permission
             val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
