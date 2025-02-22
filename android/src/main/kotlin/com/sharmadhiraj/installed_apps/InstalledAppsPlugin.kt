@@ -21,6 +21,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import java.util.Locale.ENGLISH
+import android.app.AppOpsManager
+import java.util.Calendar
 
 class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
@@ -234,42 +236,49 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
 
     private fun getMostUsedApps(limit: Int): List<Map<String, Any?>> {
-        // Define the daily usage limit in milliseconds (6 hours)
         val DAILY_USAGE_LIMIT_MS = 6 * 60 * 60 * 1000L
-
-        // Retrieve usage stats for the last 24 hours
         val usageStatsManager = context!!.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val endTime = System.currentTimeMillis()
-        val beginTime = endTime - (1000 * 60 * 60 * 24)
-        val usageStatsList = usageStatsManager.queryUsageStats(
-            UsageStatsManager.INTERVAL_DAILY,
-            beginTime,
-            endTime
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.DAY_OF_YEAR, -1) // Get stats for the last day
+        val usageStatsMap = usageStatsManager.queryAndAggregateUsageStats(
+            calendar.timeInMillis,
+            System.currentTimeMillis()
         )
-        if (usageStatsList.isNullOrEmpty()) {
-            return emptyList()
-        }
-        // Sort apps by total foreground time in descending order and take the top [limit] apps.
-        val sortedList = usageStatsList.sortedByDescending { it.totalTimeInForeground }
-        val packageManager = getPackageManager(context!!)
-        return sortedList.take(limit).mapNotNull { usage ->
+        val sortedStats = usageStatsMap.values.sortedByDescending { it.totalTimeInForeground }
+        val packageManager = context!!.packageManager
+        return sortedStats.take(limit).mapNotNull { usageStat ->
             try {
-                val appInfo = packageManager.getApplicationInfo(usage.packageName, 0)
-                // Create the app map and add the "daily_limit_ended" flag
-                val appMap = convertAppToMap(packageManager, appInfo, false)
-                appMap["daily_limit_ended"] = usage.totalTimeInForeground >= DAILY_USAGE_LIMIT_MS
-                appMap
+                val appInfo = packageManager.getApplicationInfo(usageStat.packageName, 0)
+                val appLabel = packageManager.getApplicationLabel(appInfo).toString()
+                mutableMapOf<String, Any?>(
+                    "name" to appLabel,
+                    "package_name" to usageStat.packageName,
+                    "total_time_in_foreground" to usageStat.totalTimeInForeground,
+                    "daily_limit_ended" to (usageStat.totalTimeInForeground >= DAILY_USAGE_LIMIT_MS)
+                )
             } catch (e: PackageManager.NameNotFoundException) {
                 null
             }
         }
     }
 
+    private fun hasUsageAccessPermission(context: Context): Boolean {
+        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = appOps.checkOpNoThrow(
+            AppOpsManager.OPSTR_GET_USAGE_STATS,
+            android.os.Process.myUid(),
+            context.packageName
+        )
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
+
     private fun promptUsageAccess() {
-        // Launch usage access settings so the user can enable usage stats permission
-        val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
-            flags = FLAG_ACTIVITY_NEW_TASK
+        if (!hasUsageAccessPermission(context!!)) {
+            // Launch usage access settings so the user can enable usage stats permission
+            val intent = Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                flags = FLAG_ACTIVITY_NEW_TASK
+            }
+            context!!.startActivity(intent)
         }
-        context!!.startActivity(intent)
     }
 }
