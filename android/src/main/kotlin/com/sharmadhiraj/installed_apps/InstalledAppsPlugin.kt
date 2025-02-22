@@ -64,9 +64,10 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                 val includeSystemApps = call.argument("exclude_system_apps") ?: true
                 val withIcon = call.argument("with_icon") ?: false
                 val packageNamePrefix: String = call.argument("package_name_prefix") ?: ""
+                val onlyVisibleApps = call.argument("only_visible_apps") ?: false
                 Thread {
                     val apps: List<Map<String, Any?>> =
-                        getInstalledApps(includeSystemApps, withIcon, packageNamePrefix)
+                        getInstalledApps(includeSystemApps, withIcon, packageNamePrefix, onlyVisibleApps)
                     result.success(apps)
                 }.start()
             }
@@ -106,7 +107,8 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     private fun getInstalledApps(
         excludeSystemApps: Boolean,
         withIcon: Boolean,
-        packageNamePrefix: String
+        packageNamePrefix: String,
+        onlyVisibleApps: Boolean
     ): List<Map<String, Any?>> {
         val packageManager = getPackageManager(context!!)
         var installedApps = packageManager.getInstalledApplications(0)
@@ -116,6 +118,15 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             installedApps = installedApps.filter { app ->
                 app.packageName.startsWith(packageNamePrefix.lowercase(ENGLISH))
             }
+        if (onlyVisibleApps) {
+            // Get apps with a MAIN launcher intent
+            val launcherIntent = Intent(Intent.ACTION_MAIN).apply {
+                addCategory(Intent.CATEGORY_LAUNCHER)
+            }
+            val launchableApps = packageManager.queryIntentActivities(launcherIntent, 0)
+            val launchablePackageNames = launchableApps.map { it.activityInfo.packageName }.toSet()
+            installedApps = installedApps.filter { app -> launchablePackageNames.contains(app.packageName) }
+        }
         return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon) }
     }
 
