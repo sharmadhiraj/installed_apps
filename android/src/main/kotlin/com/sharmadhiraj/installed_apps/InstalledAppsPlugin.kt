@@ -19,34 +19,21 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.PluginRegistry.Registrar
 import java.util.Locale.ENGLISH
 
+class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
 
-class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
-
-    companion object {
-
-        var context: Context? = null
-
-        @JvmStatic
-        fun registerWith(registrar: Registrar) {
-            context = registrar.context()
-            register(registrar.messenger())
-        }
-
-        @JvmStatic
-        fun register(messenger: BinaryMessenger) {
-            val channel = MethodChannel(messenger, "installed_apps")
-            channel.setMethodCallHandler(InstalledAppsPlugin())
-        }
-    }
+    private lateinit var channel: MethodChannel
+    private var context: Context? = null
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        register(binding.binaryMessenger)
+        context = binding.applicationContext
+        channel = MethodChannel(binding.binaryMessenger, "installed_apps")
+        channel.setMethodCallHandler(this)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        channel.setMethodCallHandler(null)
     }
 
     override fun onAttachedToActivity(activityPluginBinding: ActivityPluginBinding) {
@@ -63,54 +50,58 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         if (context == null) {
-            result.error("", "Something went wrong!", null)
+            result.error("ERROR", "Context is null", null)
             return
         }
         when (call.method) {
             "getInstalledApps" -> {
-                val includeSystemApps = call.argument("exclude_system_apps") ?: true
-                val withIcon = call.argument("with_icon") ?: false
-                val packageNamePrefix: String = call.argument("package_name_prefix") ?: ""
+                val includeSystemApps = call.argument<Boolean>("exclude_system_apps") ?: true
+                val withIcon = call.argument<Boolean>("with_icon") ?: false
+                val packageNamePrefix = call.argument<String>("package_name_prefix") ?: ""
+                val platformTypeName = call.argument<String>("platform_type") ?: ""
+
                 Thread {
                     val apps: List<Map<String, Any?>> =
-                        getInstalledApps(includeSystemApps, withIcon, packageNamePrefix)
+                        getInstalledApps(includeSystemApps, withIcon, packageNamePrefix, PlatformType.fromString(platformTypeName))
                     result.success(apps)
                 }.start()
             }
 
             "startApp" -> {
-                val packageName: String? = call.argument("package_name")
+                val packageName = call.argument<String>("package_name")
                 result.success(startApp(packageName))
             }
 
             "openSettings" -> {
-                val packageName: String? = call.argument("package_name")
+                val packageName = call.argument<String>("package_name")
                 openSettings(packageName)
             }
 
             "toast" -> {
-                val message = call.argument("message") ?: ""
-                val short = call.argument("short_length") ?: true
+                val message = call.argument<String>("message") ?: ""
+                val short = call.argument<Boolean>("short_length") ?: true
                 toast(message, short)
             }
 
             "getAppInfo" -> {
-                val packageName: String = call.argument("package_name") ?: ""
-                result.success(getAppInfo(getPackageManager(context!!), packageName))
+                val packageName = call.argument<String>("package_name") ?: ""
+                val platformTypeName = call.argument<String>("platform_type") ?: ""
+                val platformType = PlatformType.fromString(platformTypeName)
+                result.success(getAppInfo(getPackageManager(context!!), packageName, platformType))
             }
 
             "isSystemApp" -> {
-                val packageName: String = call.argument("package_name") ?: ""
+                val packageName = call.argument<String>("package_name") ?: ""
                 result.success(isSystemApp(getPackageManager(context!!), packageName))
             }
 
             "uninstallApp" -> {
-                val packageName: String = call.argument("package_name") ?: ""
+                val packageName = call.argument<String>("package_name") ?: ""
                 result.success(uninstallApp(packageName))
             }
 
             "isAppInstalled" -> {
-                val packageName: String = call.argument("package_name") ?: ""
+                val packageName = call.argument<String>("package_name") ?: ""
                 result.success(isAppInstalled(packageName))
             }
 
@@ -121,7 +112,8 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
     private fun getInstalledApps(
         excludeSystemApps: Boolean,
         withIcon: Boolean,
-        packageNamePrefix: String
+        packageNamePrefix: String,
+        platformType: PlatformType?
     ): List<Map<String, Any?>> {
         val packageManager = getPackageManager(context!!)
         var installedApps = packageManager.getInstalledApplications(0)
@@ -134,7 +126,7 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
                     packageNamePrefix.lowercase(ENGLISH)
                 )
             }
-        return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon) }
+        return installedApps.map { app -> convertAppToMap(packageManager, app, withIcon, platformType) }
     }
 
     private fun startApp(packageName: String?): Boolean {
@@ -178,12 +170,13 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
 
     private fun getAppInfo(
         packageManager: PackageManager,
-        packageName: String
+        packageName: String,
+        platformType: PlatformType?
     ): Map<String, Any?>? {
         var installedApps = packageManager.getInstalledApplications(0)
         installedApps = installedApps.filter { app -> app.packageName == packageName }
         return if (installedApps.isEmpty()) null
-        else convertAppToMap(packageManager, installedApps[0], true)
+        else convertAppToMap(packageManager, installedApps[0], true, platformType)
     }
 
     private fun uninstallApp(packageName: String): Boolean {
@@ -196,7 +189,6 @@ class InstalledAppsPlugin() : MethodCallHandler, FlutterPlugin, ActivityAware {
             false
         }
     }
-
 
     private fun isAppInstalled(packageName: String?): Boolean {
         val packageManager: PackageManager = context!!.packageManager
