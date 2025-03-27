@@ -1,3 +1,8 @@
+## 1.6.0
+
+* Fixed unresolved reference issue.
+* Fixed random ANR
+
 ## 1.5.2
 
 * Updated the compile SDK and Gradle versions.
