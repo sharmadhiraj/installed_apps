@@ -24,6 +24,7 @@ possible.
 ``` dart
 List<AppInfo> apps = await InstalledApps.getInstalledApps(
 	bool excludeSystemApps,
+	bool excludeUnlaunchable,
 	bool withIcon,
 	String packageNamePrefix
 );
