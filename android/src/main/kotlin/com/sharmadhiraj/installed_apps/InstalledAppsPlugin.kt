@@ -55,14 +55,15 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
         }
         when (call.method) {
             "getInstalledApps" -> {
-                val includeSystemApps = call.argument<Boolean>("exclude_system_apps") ?: true
+                val excludeSystemApps = call.argument<Boolean>("exclude_system_apps") ?: true
+                val excludeLaunchableApps = call.argument("exclude_unlaunchable") ?: true
                 val withIcon = call.argument<Boolean>("with_icon") ?: false
                 val packageNamePrefix = call.argument<String>("package_name_prefix") ?: ""
                 val platformTypeName = call.argument<String>("platform_type") ?: ""
 
                 Thread {
                     val apps: List<Map<String, Any?>> =
-                        getInstalledApps(includeSystemApps, withIcon, packageNamePrefix, PlatformType.fromString(platformTypeName))
+                        getInstalledApps(excludeSystemApps, excludeLaunchableApps, withIcon, packageNamePrefix, PlatformType.fromString(platformTypeName))
                     result.success(apps)
                 }.start()
             }
@@ -111,6 +112,7 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
 
     private fun getInstalledApps(
         excludeSystemApps: Boolean,
+        excludeUnlaunchable: Boolean,
         withIcon: Boolean,
         packageNamePrefix: String,
         platformType: PlatformType?
@@ -120,6 +122,8 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
         if (excludeSystemApps)
             installedApps =
                 installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
+        if (excludeUnlaunchable)
+            installedApps = installedApps.filter { app -> isLaunchable(packageManager, app.packageName) }
         if (packageNamePrefix.isNotEmpty())
             installedApps = installedApps.filter { app ->
                 app.packageName.startsWith(
@@ -153,6 +157,10 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
         } catch (e: PackageManager.NameNotFoundException) {
             false
         }
+    }
+
+    private fun isLaunchable(packageManager: PackageManager, packageName: String): Boolean {
+        return packageManager.getLaunchIntentForPackage(packageName) != null
     }
 
     private fun openSettings(packageName: String?) {
