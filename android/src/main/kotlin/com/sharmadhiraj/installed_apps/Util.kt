@@ -28,8 +28,8 @@ class Util {
             val packageInfo = packageManager.getPackageInfo(app.packageName, PackageManager.GET_PERMISSIONS)
             map["version_name"] = packageInfo.versionName
             map["version_code"] = getVersionCode(packageInfo)
-            map["built_with"] = platformType?.value ?: BuiltWithUtil.getPlatform(packageInfo.applicationInfo)
-            map["installed_timestamp"] = File(packageInfo.applicationInfo.sourceDir).lastModified()
+            map["built_with"] = platformType?.value ?: BuiltWithUtil.getPlatform(packageInfo.applicationInfo ?: app)
+            map["installed_timestamp"] = File(packageInfo.applicationInfo?.sourceDir ?: app.sourceDir).lastModified()
         
             if (packageInfo.requestedPermissions != null) {
                 val permissionsStatus = packageInfo.requestedPermissions.map { permission ->
