@@ -31,8 +31,9 @@ class Util {
             map["built_with"] = platformType?.value ?: BuiltWithUtil.getPlatform(packageInfo.applicationInfo ?: app)
             map["installed_timestamp"] = File(packageInfo.applicationInfo?.sourceDir ?: app.sourceDir).lastModified()
         
-            if (packageInfo.requestedPermissions != null) {
-                val permissionsStatus = packageInfo.requestedPermissions.map { permission ->
+            val requestedPermissions = packageInfo.requestedPermissions
+            if (requestedPermissions != null) {
+                val permissionsStatus = requestedPermissions.map { permission ->
                     val isGranted = checkPermissionStatus(packageManager, app.packageName, permission)
                     mapOf("permission" to permission, "granted" to isGranted)
                 }
