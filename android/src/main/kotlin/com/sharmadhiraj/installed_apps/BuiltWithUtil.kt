@@ -49,7 +49,7 @@ class BuiltWithUtil {
         }
 
         fun getAppNameFromPackage(context: Context, packageInfo: PackageInfo): String {
-            return packageInfo.applicationInfo.loadLabel(context.packageManager).toString()
+            return packageInfo.applicationInfo?.loadLabel(context.packageManager)?.toString() ?: packageInfo.packageName
         }
 
 
