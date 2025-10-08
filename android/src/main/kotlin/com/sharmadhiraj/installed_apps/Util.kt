@@ -22,11 +22,19 @@ class Util {
             map["icon"] =
                 if (withIcon) DrawableUtil.drawableToByteArray(app.loadIcon(packageManager))
                 else ByteArray(0)
-            val packageInfo = packageManager.getPackageInfo(app.packageName, 0)
-            map["version_name"] = packageInfo.versionName
-            map["version_code"] = getVersionCode(packageInfo)
-            map["built_with"] = platformType?.value ?: BuiltWithUtil.getPlatform(packageInfo.applicationInfo)
-            map["installed_timestamp"] = File(packageInfo.applicationInfo.sourceDir).lastModified()
+
+            val packageInfo = try {
+                packageManager.getPackageInfo(app.packageName, 0)
+            } catch (e: PackageManager.NameNotFoundException) {
+                null
+            }
+            if (packageInfo != null) {
+                map["version_name"] = packageInfo.versionName
+                map["version_code"] = getVersionCode(packageInfo)
+                map["built_with"] = platformType?.value ?: BuiltWithUtil.getPlatform(packageInfo.applicationInfo)
+                map["installed_timestamp"] = File(packageInfo.applicationInfo.sourceDir).lastModified()
+            }
+
             return map
         }
 

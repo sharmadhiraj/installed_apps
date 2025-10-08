@@ -9,11 +9,17 @@ import java.io.ByteArrayOutputStream
 class DrawableUtil {
 
     companion object {
+
         fun drawableToByteArray(drawable: Drawable): ByteArray {
-            val bitmap = drawableToBitmap(drawable)
-            ByteArrayOutputStream().use { stream ->
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-                return stream.toByteArray()
+            try {
+                val bitmap = drawableToBitmap(drawable)
+                ByteArrayOutputStream().use { stream ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                    return stream.toByteArray()
+                }
+            } catch (e: IllegalArgumentException) {
+                // Fallback: treat as no icon
+                return ByteArray(0)
             }
         }
 
@@ -21,11 +27,11 @@ class DrawableUtil {
             if (drawable is BitmapDrawable) {
                 return drawable.bitmap
             }
-            val bitmap = Bitmap.createBitmap(
-                drawable.intrinsicWidth,
-                drawable.intrinsicHeight,
-                Bitmap.Config.ARGB_8888
-            )
+
+            val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 1
+            val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 1
+
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             drawable.setBounds(0, 0, canvas.width, canvas.height)
             drawable.draw(canvas)
