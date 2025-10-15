@@ -5,6 +5,8 @@ import 'package:installed_apps_example/screens/app_list.dart';
 import 'package:installed_apps_example/util/common.dart';
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

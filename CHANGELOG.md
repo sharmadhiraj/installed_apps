@@ -1,3 +1,10 @@
+## 2.0.0
+
+* `getInstalledApps` now uses named arguments instead of positional.
+* Added `excludeNonLaunchableApps` argument.
+* Multiple bug fixes and stability improvements.
+* Updated README and internal cleanup.
+
 ## 1.6.0
 
 * Fixed unresolved reference issue.
