@@ -7,8 +7,8 @@ class PlatformTypeUtil {
 
     companion object {
 
-        fun getPlatform(applicationInfo: ApplicationInfo): String {
-            val apkPath = applicationInfo.sourceDir
+        fun getPlatform(applicationInfo: ApplicationInfo?): String {
+            val apkPath = applicationInfo?.sourceDir ?: return "unknown"
             var zipFile: ZipFile? = null
             return try {
                 zipFile = ZipFile(apkPath)

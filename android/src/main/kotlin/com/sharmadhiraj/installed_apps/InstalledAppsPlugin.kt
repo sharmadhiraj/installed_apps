@@ -164,8 +164,11 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
 
     private fun toast(text: String, short: Boolean) {
-        Toast.makeText(context!!, text, if (short) LENGTH_SHORT else LENGTH_LONG)
-            .show()
+        Toast.makeText(
+            context!!,
+            text,
+            if (short) LENGTH_SHORT else LENGTH_LONG
+        ).show()
     }
 
     private fun openSettings(packageName: String?) {
