@@ -76,12 +76,15 @@ class AppInfoScreen extends StatelessWidget {
           subtitle: Text(app.versionCode.toString()),
         ),
         ListTile(
-          title: Text("Built With"),
-          subtitle: Text(app.platformType.toString().split(".").last),
+          title: Text("Platform Type"),
+          subtitle: Text(app.platformType.name),
         ),
         ListTile(
           title: Text("Installed On"),
-          subtitle: Text(app.installedTimestamp.toString()),
+          subtitle: Text(
+              DateTime.fromMillisecondsSinceEpoch(app.installedTimestamp)
+                  .toLocal()
+                  .toString()),
         ),
         Container(
           margin: EdgeInsets.symmetric(horizontal: 16),

@@ -8,6 +8,8 @@ class AppInfo {
   final int versionCode;
   final PlatformType platformType;
   final int installedTimestamp;
+  final bool isSystemApp;
+  final bool isLaunchableApp;
 
   const AppInfo({
     required this.name,
@@ -17,6 +19,8 @@ class AppInfo {
     required this.versionCode,
     required this.platformType,
     required this.installedTimestamp,
+    required this.isSystemApp,
+    required this.isLaunchableApp,
   });
 
   factory AppInfo.create(dynamic data) {
@@ -26,8 +30,10 @@ class AppInfo {
       packageName: data["package_name"],
       versionName: data["version_name"] ?? "1.0.0",
       versionCode: data["version_code"] ?? 1,
-      platformType: PlatformType.parse(data["built_with"]),
+      platformType: PlatformType.parse(data["platform_type"]),
       installedTimestamp: data["installed_timestamp"] ?? 0,
+      isSystemApp: data["is_system_app"] ?? false,
+      isLaunchableApp: data["is_launchable_app"] ?? true,
     );
   }
 

@@ -7,22 +7,25 @@ class InstalledApps {
 
   /// Retrieves a list of installed apps on the device.
   ///
-  /// [excludeSystemApps] specifies whether to exclude system apps from the list.
-  /// [withIcon] specifies whether to include app icons in the list.
-  /// [packageNamePrefix] is an optional parameter to filter apps with package names starting with a specific prefix.
-  /// [platformType] is an optional parameter to set the app platform type.
+  /// [excludeSystemApps] — whether to exclude system apps from the list. Default is true.
+  /// [excludeNonLaunchableApps] — whether to exclude apps that cannot be launched (no launch intent). Default is true.
+  /// [withIcon] — whether to include app icons in the list. Default is false.
+  /// [packageNamePrefix] — optional prefix to filter apps whose package names start with this value. Default is null.
+  /// [platformType] — optional parameter to specify the app platform type. Default is null.
   ///
   /// Returns a list of [AppInfo] objects representing the installed apps.
-  static Future<List<AppInfo>> getInstalledApps([
+  static Future<List<AppInfo>> getInstalledApps({
     bool excludeSystemApps = true,
+    bool excludeNonLaunchableApps = true,
     bool withIcon = false,
-    String packageNamePrefix = "",
+    String? packageNamePrefix,
     PlatformType? platformType,
-  ]) async {
+  }) async {
     dynamic apps = await _channel.invokeMethod(
       "getInstalledApps",
       {
         "exclude_system_apps": excludeSystemApps,
+        "exclude_non_launchable_apps": excludeNonLaunchableApps,
         "with_icon": withIcon,
         "package_name_prefix": packageNamePrefix,
         "platform_type": platformType?.name,
