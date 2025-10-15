@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:installed_apps/index.dart';
+import 'package:installed_apps/app_info.dart';
+import 'package:installed_apps/installed_apps.dart';
 
 class AppInfoScreen extends StatelessWidget {
   final AppInfo? app;
 
-  AppInfoScreen({this.app});
+  const AppInfoScreen({Key? key, this.app}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

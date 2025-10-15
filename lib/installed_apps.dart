@@ -3,7 +3,7 @@ import 'package:installed_apps/app_info.dart';
 
 /// A utility class for interacting with installed apps on the device.
 class InstalledApps {
-  static const MethodChannel _channel = const MethodChannel('installed_apps');
+  static const MethodChannel _channel = MethodChannel('installed_apps');
 
   /// Retrieves a list of installed apps on the device.
   ///
@@ -46,7 +46,7 @@ class InstalledApps {
   /// Opens the settings screen (App Info) of an app with the specified package name.
   ///
   /// [packageName] is the package name of the app whose settings screen should be opened.
-  static openSettings(String packageName) {
+  static void openSettings(String packageName) {
     _channel.invokeMethod(
       "openSettings",
       {"package_name": packageName},
@@ -57,7 +57,7 @@ class InstalledApps {
   ///
   /// [message] is the message to display.
   /// [isShortLength] specifies whether the toast should be short or long in duration.
-  static toast(String message, bool isShortLength) {
+  static void toast(String message, bool isShortLength) {
     _channel.invokeMethod(
       "toast",
       {

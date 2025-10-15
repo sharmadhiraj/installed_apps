@@ -4,6 +4,8 @@ import 'package:installed_apps/installed_apps.dart';
 import 'package:installed_apps_example/screens/app_info.dart';
 
 class AppListScreen extends StatelessWidget {
+  const AppListScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

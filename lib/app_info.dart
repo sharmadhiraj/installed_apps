@@ -52,20 +52,20 @@ class AppInfo {
     if (builtWithRaw == "flutter") {
       return BuiltWith.flutter;
     } else if (builtWithRaw == "react_native") {
-      return BuiltWith.react_native;
+      return BuiltWith.reactNative;
     } else if (builtWithRaw == "xamarin") {
       return BuiltWith.xamarin;
     } else if (builtWithRaw == "ionic") {
       return BuiltWith.ionic;
     }
-    return BuiltWith.native_or_others;
+    return BuiltWith.nativeOrOthers;
   }
 }
 
 enum BuiltWith {
   flutter,
-  react_native,
+  reactNative,
   xamarin,
   ionic,
-  native_or_others,
+  nativeOrOthers,
 }
