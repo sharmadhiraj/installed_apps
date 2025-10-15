@@ -12,7 +12,12 @@ class PlatformTypeUtil {
             val apkPath = applicationInfo?.sourceDir ?: return "unknown"
             var zipFile: ZipFile? = null
             return try {
-                zipFile = ZipFile(apkPath)
+                zipFile = try {
+                    ZipFile(apkPath)
+                } catch (e: java.util.zip.ZipException) {
+                    Log.w("InstalledAppsPlugin", "Invalid APK zip: ${e.message}")
+                    return "unknown"
+                }
                 val entries = zipFile.entries()
                     .asSequence()
                     .map { it.name }
