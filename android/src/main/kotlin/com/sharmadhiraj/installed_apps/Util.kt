@@ -26,6 +26,7 @@ class Util {
                 val packageInfo = try {
                     packageManager.getPackageInfo(app.packageName, 0)
                 } catch (e: PackageManager.NameNotFoundException) {
+                    Log.w("InstalledAppsPlugin", "convertAppToMap: ${e.message}")
                     null
                 }
                 if (packageInfo != null) {

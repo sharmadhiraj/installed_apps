@@ -132,6 +132,16 @@ enum PlatformType {
 
 ---
 
+### QUERY_ALL_PACKAGES Permission and Play Store Review
+
+The `QUERY_ALL_PACKAGES` permission is required for some functionality of this package, but
+including it can cause Play Store rejections if your app doesn’t justify it. To handle this, either
+declare its necessity in the Play Store listing or use `tools:node="remove"` in your manifest to
+exclude it while still using the package (note this will limit visibility to all apps). For
+multi-flavor setups, you can include the permission in `src/dev/AndroidManifest.xml` for
+internal/dev builds and remove it in `src/playstore/AndroidManifest.xml` for Play Store builds,
+ensuring each flavor has the correct manifest without affecting core functionality.
+
 ## Notes
 
 * Android requires `QUERY_ALL_PACKAGES` permission for full app visibility. Ensure compliance with
