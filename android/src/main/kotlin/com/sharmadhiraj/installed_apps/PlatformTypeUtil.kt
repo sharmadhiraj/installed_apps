@@ -1,6 +1,7 @@
 package com.sharmadhiraj.installed_apps
 
 import android.content.pm.ApplicationInfo
+import android.util.Log
 import java.util.zip.ZipFile
 
 class PlatformTypeUtil {
@@ -16,7 +17,6 @@ class PlatformTypeUtil {
                     .asSequence()
                     .map { it.name }
                     .toList()
-
                 when {
                     entries.any { it.contains("/flutter_assets/") } -> "flutter"
                     entries.any {
@@ -29,6 +29,9 @@ class PlatformTypeUtil {
                     entries.any { it.contains("node_modules_ionic") } -> "ionic"
                     else -> "native_or_others"
                 }
+            } catch (e: Exception) {
+                Log.w("InstalledAppsPlugin", "getPlatform: ${e.message}")
+                "unknown"
             } finally {
                 try {
                     zipFile?.close()
