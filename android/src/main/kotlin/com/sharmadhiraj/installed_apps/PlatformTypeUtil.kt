@@ -1,13 +1,11 @@
 package com.sharmadhiraj.installed_apps
 
-import android.content.Context
 import android.content.pm.ApplicationInfo
-import android.content.pm.PackageInfo
 import java.util.zip.ZipFile
 
-class BuiltWithUtil {
+class PlatformTypeUtil {
 
-    companion object {
+    companion object Companion {
 
         fun getPlatform(applicationInfo: ApplicationInfo): String {
             val apkPath = applicationInfo.sourceDir
@@ -47,12 +45,5 @@ class BuiltWithUtil {
         private fun contains(entries: List<String>, value: String): Boolean {
             return entries.firstOrNull { entry -> entry.contains(value) } != null
         }
-
-        fun getAppNameFromPackage(context: Context, packageInfo: PackageInfo): String {
-            return packageInfo.applicationInfo.loadLabel(context.packageManager).toString()
-        }
-
-
     }
-
 }

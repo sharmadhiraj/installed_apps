@@ -21,10 +21,7 @@ class AppInfoScreen extends StatelessWidget {
 
   Widget _buildAppInfoWithPackageName() {
     return FutureBuilder<AppInfo?>(
-      future: InstalledApps.getAppInfo(
-        "com.google.android.gm",
-        BuiltWith.flutter,
-      ),
+      future: InstalledApps.getAppInfo("com.google.android.gm"),
       builder: (BuildContext buildContext, AsyncSnapshot<AppInfo?> snapshot) {
         return snapshot.connectionState == ConnectionState.done
             ? snapshot.hasData && snapshot.data != null
@@ -80,7 +77,7 @@ class AppInfoScreen extends StatelessWidget {
         ),
         ListTile(
           title: Text("Built With"),
-          subtitle: Text(app.builtWith.toString().split(".").last),
+          subtitle: Text(app.platformType.toString().split(".").last),
         ),
         ListTile(
           title: Text("Installed On"),
