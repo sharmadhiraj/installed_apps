@@ -4,10 +4,13 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.P
+import android.util.Base64
 import android.util.Log
 import java.io.File
+import java.security.MessageDigest
 
 class Util {
     companion object {
@@ -38,6 +41,7 @@ class Util {
                     map["is_system_app"] = isSystemApp(packageManager, packageInfo.packageName)
                     map["is_launchable_app"] =
                         isLaunchableApp(packageManager, packageInfo.packageName)
+                    map["certificate_hashes"] = getCertificateHashes(packageManager, packageInfo.packageName)
                 }
             } else {
                 map["name"] = "Unknown"
@@ -74,6 +78,27 @@ class Util {
                 Log.w("InstalledAppsPlugin", "isLaunchableApp: ${e.message}")
                 false
             }
+        }
+
+        fun getCertificateHashes(packageManager: PackageManager, packageName: String): List<String> {
+            val packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+            val signingInfo = packageInfo.signingInfo
+            val signatures = if (signingInfo.hasMultipleSigners()) {
+                signingInfo.apkContentsSigners
+            } else {
+                signingInfo.signingCertificateHistory
+            }
+
+            val hashes = signatures.map {
+                signature -> MessageDigest
+                    .getInstance("SHA-256")
+                    .digest(signature.toByteArray())
+                    .joinToString(":") {
+                        "%02X".format(it)
+                    }
+            }
+
+            return hashes
         }
     }
 }

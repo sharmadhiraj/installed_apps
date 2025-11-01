@@ -10,6 +10,7 @@ class AppInfo {
   final int installedTimestamp;
   final bool isSystemApp;
   final bool isLaunchableApp;
+  final List<String> certificateHashes;
 
   const AppInfo({
     required this.name,
@@ -21,6 +22,7 @@ class AppInfo {
     required this.installedTimestamp,
     required this.isSystemApp,
     required this.isLaunchableApp,
+    required this.certificateHashes,
   });
 
   factory AppInfo.create(dynamic data) {
@@ -34,6 +36,7 @@ class AppInfo {
       installedTimestamp: data["installed_timestamp"] ?? 0,
       isSystemApp: data["is_system_app"] ?? false,
       isLaunchableApp: data["is_launchable_app"] ?? true,
+      certificateHashes: data["certificate_hashes"].cast<String>() ?? [],
     );
   }
 
