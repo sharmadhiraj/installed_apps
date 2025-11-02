@@ -41,6 +41,7 @@ class Util {
                     map["is_system_app"] = isSystemApp(packageManager, packageInfo.packageName)
                     map["is_launchable_app"] =
                         isLaunchableApp(packageManager, packageInfo.packageName)
+                    map["has_multiple_signers"] = hasMultipleSigners(packageManager, packageInfo.packageName)
                     map["certificate_hashes"] = getCertificateHashes(packageManager, packageInfo.packageName)
                 }
             } else {
@@ -78,6 +79,13 @@ class Util {
                 Log.w("InstalledAppsPlugin", "isLaunchableApp: ${e.message}")
                 false
             }
+        }
+
+        fun hasMultipleSigners(packageManager: PackageManager, packageName: String): Boolean {
+            return packageManager
+                    .getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+                    .signingInfo
+                    .hasMultipleSigners()
         }
 
         fun getCertificateHashes(packageManager: PackageManager, packageName: String): List<String> {

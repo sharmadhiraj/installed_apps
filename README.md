@@ -83,6 +83,7 @@ class AppInfo {
   int installedTimestamp;
   bool isSystemApp;
   bool isLaunchableApp;
+  bool hasMultipleSigners;
   List<String> certificateHashes;
 }
 ```
