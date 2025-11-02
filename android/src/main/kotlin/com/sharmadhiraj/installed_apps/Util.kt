@@ -91,6 +91,8 @@ class Util {
         fun getCertificateHashes(packageManager: PackageManager, packageName: String): List<String> {
             val packageInfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
             val signingInfo = packageInfo.signingInfo
+
+            // https://developer.android.com/reference/android/content/pm/SigningInfo#getApkContentsSigners()
             val signatures = if (signingInfo.hasMultipleSigners()) {
                 signingInfo.apkContentsSigners
             } else {
