@@ -34,7 +34,7 @@ class Util {
                     map["version_code"] = getVersionCode(packageInfo)
                     map["platform_type"] = PlatformTypeUtil.getPlatform(packageInfo.applicationInfo)
                     map["installed_timestamp"] =
-                        File(packageInfo.applicationInfo.sourceDir).lastModified()
+                        File(packageInfo.applicationInfo?.sourceDir).lastModified()
                     map["is_system_app"] = isSystemApp(packageManager, packageInfo.packageName)
                     map["is_launchable_app"] =
                         isLaunchableApp(packageManager, packageInfo.packageName)
