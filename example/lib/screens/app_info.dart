@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:installed_apps/index.dart';
+import 'package:installed_apps/app_info.dart';
+import 'package:installed_apps/installed_apps.dart';
 
 class AppInfoScreen extends StatelessWidget {
   final AppInfo? app;
 
-  AppInfoScreen({this.app});
+  const AppInfoScreen({Key? key, this.app}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +21,7 @@ class AppInfoScreen extends StatelessWidget {
 
   Widget _buildAppInfoWithPackageName() {
     return FutureBuilder<AppInfo?>(
-      future: InstalledApps.getAppInfo(
-        "com.google.android.gm",
-        BuiltWith.flutter,
-      ),
+      future: InstalledApps.getAppInfo("com.google.android.gm"),
       builder: (BuildContext buildContext, AsyncSnapshot<AppInfo?> snapshot) {
         return snapshot.connectionState == ConnectionState.done
             ? snapshot.hasData && snapshot.data != null
@@ -78,12 +76,15 @@ class AppInfoScreen extends StatelessWidget {
           subtitle: Text(app.versionCode.toString()),
         ),
         ListTile(
-          title: Text("Built With"),
-          subtitle: Text(app.builtWith.toString().split(".").last),
+          title: Text("Platform Type"),
+          subtitle: Text(app.platformType.name),
         ),
         ListTile(
           title: Text("Installed On"),
-          subtitle: Text(app.installedTimestamp.toString()),
+          subtitle: Text(
+              DateTime.fromMillisecondsSinceEpoch(app.installedTimestamp)
+                  .toLocal()
+                  .toString()),
         ),
         Container(
           margin: EdgeInsets.symmetric(horizontal: 16),

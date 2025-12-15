@@ -1,22 +1,26 @@
 import 'dart:typed_data';
 
 class AppInfo {
-  String name;
-  Uint8List? icon;
-  String packageName;
-  String versionName;
-  int versionCode;
-  BuiltWith builtWith;
-  int installedTimestamp;
+  final String name;
+  final Uint8List? icon;
+  final String packageName;
+  final String versionName;
+  final int versionCode;
+  final PlatformType platformType;
+  final int installedTimestamp;
+  final bool isSystemApp;
+  final bool isLaunchableApp;
 
-  AppInfo({
+  const AppInfo({
     required this.name,
     required this.icon,
     required this.packageName,
     required this.versionName,
     required this.versionCode,
-    required this.builtWith,
+    required this.platformType,
     required this.installedTimestamp,
+    required this.isSystemApp,
+    required this.isLaunchableApp,
   });
 
   factory AppInfo.create(dynamic data) {
@@ -26,14 +30,14 @@ class AppInfo {
       packageName: data["package_name"],
       versionName: data["version_name"] ?? "1.0.0",
       versionCode: data["version_code"] ?? 1,
-      builtWith: parseBuiltWith(data["built_with"]),
+      platformType: PlatformType.parse(data["platform_type"]),
       installedTimestamp: data["installed_timestamp"] ?? 0,
+      isSystemApp: data["is_system_app"] ?? false,
+      isLaunchableApp: data["is_launchable_app"] ?? true,
     );
   }
 
-  String getVersionInfo() {
-    return "$versionName ($versionCode)";
-  }
+  String getVersionInfo() => "$versionName ($versionCode)";
 
   static List<AppInfo> parseList(dynamic apps) {
     if (apps == null || apps is! List || apps.isEmpty) return [];
@@ -47,25 +51,24 @@ class AppInfo {
     appInfoList.sort((a, b) => a.name.compareTo(b.name));
     return appInfoList;
   }
-
-  static BuiltWith parseBuiltWith(String? builtWithRaw) {
-    if (builtWithRaw == "flutter") {
-      return BuiltWith.flutter;
-    } else if (builtWithRaw == "react_native") {
-      return BuiltWith.react_native;
-    } else if (builtWithRaw == "xamarin") {
-      return BuiltWith.xamarin;
-    } else if (builtWithRaw == "ionic") {
-      return BuiltWith.ionic;
-    }
-    return BuiltWith.native_or_others;
-  }
 }
 
-enum BuiltWith {
-  flutter,
-  react_native,
-  xamarin,
-  ionic,
-  native_or_others,
+enum PlatformType {
+  flutter('flutter', 'Flutter'),
+  reactNative('react_native', 'React Native'),
+  xamarin('xamarin', 'Xamarin'),
+  ionic('ionic', 'Ionic'),
+  nativeOrOthers('native_or_others', 'Native or Others');
+
+  final String slug;
+  final String name;
+
+  const PlatformType(this.slug, this.name);
+
+  static PlatformType parse(String? raw) {
+    return values.firstWhere(
+      (e) => e.slug == raw,
+      orElse: () => PlatformType.nativeOrOthers,
+    );
+  }
 }
