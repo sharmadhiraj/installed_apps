@@ -18,10 +18,10 @@ class PlatformTypeUtil {
                     Log.w("InstalledAppsPlugin", "Invalid APK zip: ${e.message}")
                     return "unknown"
                 }
-                val entries = zipFile.entries()
-                    .asSequence()
-                    .map { it.name }
-                    .toList()
+                val entries = zipFile?.entries()
+                    ?.asSequence()
+                    ?.map { it.name }
+                    ?.toList() ?: emptyList<String>()
                 when {
                     entries.any { it.contains("/flutter_assets/") } -> "flutter"
                     entries.any {
