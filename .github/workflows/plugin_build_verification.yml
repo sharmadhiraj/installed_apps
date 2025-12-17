@@ -1,0 +1,44 @@
+name: Verify Plugin Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify-plugin:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        flutter-version: [ 3.38.5, 3.35.7, 3.32.8, 3.29.3, 3.27.4 ]
+        kotlin-version: [ 2.3.0, 2.2.0, 2.1.0, 2.0.0, 1.9.0 ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter-version }}
+          cache: true
+
+      - name: Accept Android licenses
+        run: yes | flutter doctor --android-licenses
+
+      - name: Remove flutter_lints
+        working-directory: example
+        run: flutter pub remove flutter_lints || true
+
+      - name: Set Kotlin version in example (settings.gradle)
+        run: |
+          sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
+
+      - name: Get example dependencies
+        working-directory: example
+        run: flutter pub get
+
+      - name: Build example APK
+        working-directory: example
+        run: flutter build apk --debug --no-tree-shake-icons
+        env:
+          GRADLE_OPTS: "-Xmx4g"
