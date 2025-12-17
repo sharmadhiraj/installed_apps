@@ -12,6 +12,7 @@ class AppInfo {
   final bool isLaunchableApp;
   final bool hasMultipleSigners;
   final List<String> certificateHashes;
+  final String? category;
 
   const AppInfo({
     required this.name,
@@ -25,6 +26,7 @@ class AppInfo {
     required this.isLaunchableApp,
     required this.hasMultipleSigners,
     required this.certificateHashes,
+    required this.category,
   });
 
   factory AppInfo.create(dynamic data) {
@@ -40,6 +42,7 @@ class AppInfo {
       isLaunchableApp: data["is_launchable_app"] ?? true,
       hasMultipleSigners: data["has_multiple_signers"] ?? false,
       certificateHashes: data["certificate_hashes"].cast<String>() ?? [],
+      category: data["category"],
     );
   }
 

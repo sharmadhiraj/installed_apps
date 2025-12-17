@@ -16,10 +16,10 @@ updated.
 ## Features
 
 * List installed apps with optional filters:
-  * Exclude system apps
-  * Exclude non-launchable apps
-  * Filter by package name prefix
-  * Filter by platform type
+    * Exclude system apps
+    * Exclude non-launchable apps
+    * Filter by package name prefix
+    * Filter by platform type
 * Get detailed app info
 * Launch apps by package name
 * Open app settings
@@ -85,6 +85,7 @@ class AppInfo {
   bool isLaunchableApp;
   bool hasMultipleSigners;
   List<String> certificateHashes;
+  String? category;
 }
 ```
 

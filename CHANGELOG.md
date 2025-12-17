@@ -1,3 +1,7 @@
+## 2.0.1
+
+* Internal & build issues fixes
+
 ## 2.0.0
 
 * `getInstalledApps` now uses named arguments instead of positional.

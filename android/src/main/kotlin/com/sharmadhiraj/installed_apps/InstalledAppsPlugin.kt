@@ -144,7 +144,7 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
             }
         return installedApps.map { app ->
             convertAppToMap(
-                packageManager,
+                context!!,
                 app,
                 withIcon,
             )
@@ -191,7 +191,7 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
         var installedApps = packageManager.getInstalledApplications(0)
         installedApps = installedApps.filter { app -> app.packageName == packageName }
         return if (installedApps.isEmpty()) null
-        else convertAppToMap(packageManager, installedApps[0], true)
+        else convertAppToMap(context!!, installedApps[0], true)
     }
 
     private fun uninstallApp(packageName: String): Boolean {
@@ -207,7 +207,7 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
     }
 
     private fun isAppInstalled(packageName: String?): Boolean {
-        val packageManager: PackageManager = context!!.packageManager
+        val packageManager: PackageManager = getPackageManager(context!!)
         return try {
             packageManager.getPackageInfo(packageName ?: "", PackageManager.GET_ACTIVITIES)
             true
