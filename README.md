@@ -49,16 +49,16 @@ Example project: [GitHub](https://github.com/sharmadhiraj/installed_apps/tree/ma
 List<AppInfo> apps = await InstalledApps.getInstalledApps(
   // Optional: whether to exclude system apps from the list. Default is true.
   excludeSystemApps: true,
-  
+
   // Optional: whether to exclude apps that cannot be launched (no launch intent). Default is true.
   excludeNonLaunchableApps: true,
-  
+
   // Optional: whether to include app icons in the result. Default is false.
   withIcon: false,
-  
+
   // Optional: filter apps whose package names start with this prefix. Default is null (no filtering).
   packageNamePrefix: "com.example",
-  
+
   // Optional: filter apps by platform type (Flutter, React Native, etc.). Default is null (no filtering).
   platformType: PlatformType.flutter,
 );
@@ -83,6 +83,8 @@ class AppInfo {
   int installedTimestamp;
   bool isSystemApp;
   bool isLaunchableApp;
+  bool hasMultipleSigners;
+  List<String> certificateHashes;
   String? category;
 }
 ```

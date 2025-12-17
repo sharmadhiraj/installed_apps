@@ -10,6 +10,8 @@ class AppInfo {
   final int installedTimestamp;
   final bool isSystemApp;
   final bool isLaunchableApp;
+  final bool hasMultipleSigners;
+  final List<String> certificateHashes;
   final String? category;
 
   const AppInfo({
@@ -22,6 +24,8 @@ class AppInfo {
     required this.installedTimestamp,
     required this.isSystemApp,
     required this.isLaunchableApp,
+    required this.hasMultipleSigners,
+    required this.certificateHashes,
     required this.category,
   });
 
@@ -36,6 +40,8 @@ class AppInfo {
       installedTimestamp: data["installed_timestamp"] ?? 0,
       isSystemApp: data["is_system_app"] ?? false,
       isLaunchableApp: data["is_launchable_app"] ?? true,
+      hasMultipleSigners: data["has_multiple_signers"] ?? false,
+      certificateHashes: data["certificate_hashes"].cast<String>() ?? [],
       category: data["category"],
     );
   }
