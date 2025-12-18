@@ -16,10 +16,10 @@ updated.
 ## Features
 
 * List installed apps with optional filters:
-  * Exclude system apps
-  * Exclude non-launchable apps
-  * Filter by package name prefix
-  * Filter by platform type
+    * Exclude system apps
+    * Exclude non-launchable apps
+    * Filter by package name prefix
+    * Filter by platform type
 * Get detailed app info
 * Launch apps by package name
 * Open app settings
@@ -49,16 +49,16 @@ Example project: [GitHub](https://github.com/sharmadhiraj/installed_apps/tree/ma
 List<AppInfo> apps = await InstalledApps.getInstalledApps(
   // Optional: whether to exclude system apps from the list. Default is true.
   excludeSystemApps: true,
-  
+
   // Optional: whether to exclude apps that cannot be launched (no launch intent). Default is true.
   excludeNonLaunchableApps: true,
-  
+
   // Optional: whether to include app icons in the result. Default is false.
   withIcon: false,
-  
+
   // Optional: filter apps whose package names start with this prefix. Default is null (no filtering).
   packageNamePrefix: "com.example",
-  
+
   // Optional: filter apps by platform type (Flutter, React Native, etc.). Default is null (no filtering).
   platformType: PlatformType.flutter,
 );
@@ -72,10 +72,10 @@ AppInfo? app = await InstalledApps.getAppInfo("com.example.myapp");
 
 ### AppInfo Model
 
-```
+```dart
 class AppInfo {
   String name;
-  Uint8List? icon;
+  Uint8List? icon; // nullable
   String packageName;
   String versionName;
   int versionCode;
@@ -83,6 +83,7 @@ class AppInfo {
   int installedTimestamp;
   bool isSystemApp;
   bool isLaunchableApp;
+  AppCategory category;
 }
 ```
 
@@ -118,7 +119,26 @@ bool? installed = await InstalledApps.isAppInstalled("com.example.myapp");
 
 ---
 
-## PlatformType Enum
+## AppCategory enum
+
+```dart
+enum AppCategory {
+  game(0, "Game"),
+  audio(1, "Audio"),
+  video(2, "Video"),
+  image(3, "Image"),
+  social(4, "Social"),
+  news(5, "News"),
+  maps(6, "Maps"),
+  productivity(7, "Productivity"),
+  accessibility(8, "Accessibility"),
+  undefined(-1, "Undefined");
+}
+```
+
+---
+
+## PlatformType enum
 
 ```dart
 enum PlatformType {

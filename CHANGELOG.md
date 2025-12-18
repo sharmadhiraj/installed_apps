@@ -1,3 +1,9 @@
+## 2.1.0
+
+* Added app category information to app info
+* Improved performance of getInstalledApps
+* Internal fixes and improvements
+
 ## 2.0.1
 
 * Internal & build issues fixes
