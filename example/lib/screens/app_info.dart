@@ -77,7 +77,7 @@ class AppInfoScreen extends StatelessWidget {
         ),
         ListTile(
           title: Text("Category"),
-          subtitle: Text(app.category ?? "N/A"),
+          subtitle: Text(app.category.toString()),
         ),
         ListTile(
           title: Text("Platform Type"),

@@ -1,5 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:installed_apps/app_category.dart';
+import 'package:installed_apps/platform_type.dart';
+
 class AppInfo {
   final String name;
   final Uint8List? icon;
@@ -10,7 +13,7 @@ class AppInfo {
   final int installedTimestamp;
   final bool isSystemApp;
   final bool isLaunchableApp;
-  final String? category;
+  final AppCategory category;
 
   const AppInfo({
     required this.name,
@@ -36,7 +39,7 @@ class AppInfo {
       installedTimestamp: data["installed_timestamp"] ?? 0,
       isSystemApp: data["is_system_app"] ?? false,
       isLaunchableApp: data["is_launchable_app"] ?? true,
-      category: data["category"],
+      category: AppCategory.fromValue(data["category"]),
     );
   }
 
@@ -53,25 +56,5 @@ class AppInfo {
         .toList();
     appInfoList.sort((a, b) => a.name.compareTo(b.name));
     return appInfoList;
-  }
-}
-
-enum PlatformType {
-  flutter("flutter", "Flutter"),
-  reactNative("react_native", "React Native"),
-  xamarin("xamarin", "Xamarin"),
-  ionic("ionic", "Ionic"),
-  nativeOrOthers("native_or_others", "Native or Others");
-
-  final String slug;
-  final String name;
-
-  const PlatformType(this.slug, this.name);
-
-  static PlatformType parse(String? raw) {
-    return values.firstWhere(
-      (e) => e.slug == raw,
-      orElse: () => PlatformType.nativeOrOthers,
-    );
   }
 }
