@@ -126,45 +126,41 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
         platformType: PlatformType?
     ): List<Map<String, Any?>> {
         val packageManager = getPackageManager(context!!)
-        val packageInfos = packageManager.getInstalledPackages(0)
-        val packageInfoMap = packageInfos.associateBy { it.packageName }
-        var installedApps = packageManager.getInstalledApplications(0)
+        var packageInfos = packageManager.getInstalledPackages(0)
 
         if (excludeSystemApps) {
-            installedApps =
-                installedApps.filter { app -> !isSystemApp(packageInfoMap[app.packageName]) }
+            packageInfos =
+                packageInfos.filter { packageInfo -> !isSystemApp(packageInfo) }
         }
         val launchablePackageNames = getLaunchablePackageNames(packageManager)
         if (excludeNonLaunchableApps) {
-            installedApps = installedApps.filter { app ->
-                launchablePackageNames.contains(app.packageName)
+            packageInfos = packageInfos.filter { packageInfo ->
+                launchablePackageNames.contains(packageInfo.packageName)
             }
         }
         if (packageNamePrefix.isNotEmpty()) {
             val prefixLower = packageNamePrefix.lowercase(ENGLISH)
-            installedApps = installedApps.filter { app ->
-                app.packageName.lowercase(ENGLISH).startsWith(prefixLower)
+            packageInfos = packageInfos.filter { packageInfo ->
+                packageInfo.packageName.lowercase(ENGLISH).startsWith(prefixLower)
             }
         }
 
         if (platformType != null) {
-            installedApps =
-                installedApps.filter { app ->
+            packageInfos =
+                packageInfos.filter { packageInfo ->
                     PlatformTypeUtil.getPlatform(
                         packageManager,
-                        app
+                        packageInfo.applicationInfo
                     ) == platformType.value
                 }
         }
-        return installedApps.map { app ->
+        return packageInfos.map { packageInfo ->
             convertAppToMap(
-                context!!,
                 packageManager,
-                app,
-                packageInfoMap[app.packageName],
+                packageInfo,
                 withIcon,
                 isSystemAppOverride = if (excludeSystemApps) false else null,
-                isLaunchableOverride = launchablePackageNames.contains(app.packageName),
+                isLaunchableOverride = launchablePackageNames.contains(packageInfo.packageName),
                 platformTypeOverride = platformType?.value,
             )
         }
@@ -208,18 +204,15 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
         packageManager: PackageManager,
         packageName: String
     ): Map<String, Any?>? {
-        val app = packageManager
-            .getInstalledApplications(0)
-            .firstOrNull { it.packageName == packageName }
-
-        return app?.let {
+        return try {
+            val packageInfo = packageManager.getPackageInfo(packageName, 0)
             convertAppToMap(
-                context!!,
                 packageManager,
-                it,
-                packageManager.getPackageInfo(app.packageName, 0),
+                packageInfo,
                 true
             )
+        } catch (_: PackageManager.NameNotFoundException) {
+            null
         }
     }
 

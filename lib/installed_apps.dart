@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:installed_apps/app_info.dart';
+import 'package:installed_apps/platform_type.dart';
 
 /// A utility class for interacting with installed apps on the device.
 class InstalledApps {

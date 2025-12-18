@@ -72,10 +72,10 @@ AppInfo? app = await InstalledApps.getAppInfo("com.example.myapp");
 
 ### AppInfo Model
 
-```
+```dart
 class AppInfo {
   String name;
-  Uint8List? icon;
+  Uint8List? icon; // nullable
   String packageName;
   String versionName;
   int versionCode;
@@ -83,9 +83,7 @@ class AppInfo {
   int installedTimestamp;
   bool isSystemApp;
   bool isLaunchableApp;
-  bool hasMultipleSigners;
-  List<String> certificateHashes;
-  String? category;
+  AppCategory category;
 }
 ```
 
@@ -121,7 +119,26 @@ bool? installed = await InstalledApps.isAppInstalled("com.example.myapp");
 
 ---
 
-## PlatformType Enum
+## AppCategory enum
+
+```dart
+enum AppCategory {
+  game(0, "Game"),
+  audio(1, "Audio"),
+  video(2, "Video"),
+  image(3, "Image"),
+  social(4, "Social"),
+  news(5, "News"),
+  maps(6, "Maps"),
+  productivity(7, "Productivity"),
+  accessibility(8, "Accessibility"),
+  undefined(-1, "Undefined");
+}
+```
+
+---
+
+## PlatformType enum
 
 ```dart
 enum PlatformType {

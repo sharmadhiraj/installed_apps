@@ -13,40 +13,38 @@ import android.util.Log
 class Util {
     companion object {
         fun convertAppToMap(
-            context: Context,
             packageManager: PackageManager,
-            app: ApplicationInfo,
-            packageInfo: PackageInfo?,
+            packageInfo: PackageInfo,
             withIcon: Boolean,
             isSystemAppOverride: Boolean? = null,
             isLaunchableOverride: Boolean? = null,
             platformTypeOverride: String? = null
-
         ): HashMap<String, Any?> {
+            val app: ApplicationInfo = packageInfo.applicationInfo
             val map = HashMap<String, Any?>()
             map["name"] = packageManager.getApplicationLabel(app)
             map["package_name"] = app.packageName
             map["icon"] =
                 if (withIcon) DrawableUtil.drawableToByteArray(app.loadIcon(packageManager))
                 else null
-            if (packageInfo != null) {
-                map["version_name"] = packageInfo.versionName
-                map["version_code"] = getVersionCode(packageInfo)
-                map["platform_type"] =
-                    platformTypeOverride
-                        ?: PlatformTypeUtil.getPlatform(packageManager, app)
-                map["installed_timestamp"] = packageInfo.lastUpdateTime
-                map["is_system_app"] = isSystemAppOverride ?: isSystemApp(packageInfo)
-                map["is_launchable_app"] = isLaunchableOverride
-                    ?: isLaunchableApp(packageManager, packageInfo.packageName)
+
+            map["version_name"] = packageInfo.versionName
+            map["version_code"] = getVersionCode(packageInfo)
+            map["platform_type"] =
+                platformTypeOverride
+                    ?: PlatformTypeUtil.getPlatform(packageManager, app)
+            map["installed_timestamp"] = packageInfo.lastUpdateTime
+            map["is_system_app"] = isSystemAppOverride ?: isSystemApp(packageInfo)
+            map["is_launchable_app"] = isLaunchableOverride
+                ?: isLaunchableApp(packageManager, packageInfo.packageName)
 //                map["has_multiple_signers"] =
 //                    hasMultipleSigners(packageManager, packageInfo.packageName)
 //                map["certificate_hashes"] =
 //                    getCertificateHashes(packageInfo)
-                if (SDK_INT >= Build.VERSION_CODES.O) {
-                    map["category"] = ApplicationInfo.getCategoryTitle(context, app.category)
-                }
+            if (SDK_INT >= Build.VERSION_CODES.O && app.category != ApplicationInfo.CATEGORY_UNDEFINED) {
+                map["category"] = app.category
             }
+
             return map
         }
 
