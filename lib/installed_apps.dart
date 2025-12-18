@@ -30,7 +30,7 @@ class InstalledApps {
           "exclude_non_launchable_apps": excludeNonLaunchableApps,
           "with_icon": withIcon,
           "package_name_prefix": packageNamePrefix,
-          "platform_type": platformType?.name,
+          "platform_type": platformType?.slug,
         },
       );
       return AppInfo.parseList(apps);

@@ -3,48 +3,64 @@ import 'package:installed_apps/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'package:installed_apps_example/screens/app_info.dart';
 
-class AppListScreen extends StatelessWidget {
+class AppListScreen extends StatefulWidget {
   const AppListScreen({Key? key}) : super(key: key);
+
+  @override
+  State<AppListScreen> createState() => _AppListScreenState();
+}
+
+class _AppListScreenState extends State<AppListScreen> {
+  List<AppInfo>? apps;
+  bool loading = true;
+  final Stopwatch _stopwatch = Stopwatch();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadApps();
+  }
+
+  Future<void> _loadApps() async {
+    _stopwatch.start();
+    final List<AppInfo> result = await InstalledApps.getInstalledApps(
+      excludeSystemApps: false,
+      withIcon: true,
+    );
+    _stopwatch.stop();
+
+    final String message =
+        "Took ${_stopwatch.elapsedMilliseconds} ms for ${result.length} apps";
+    debugPrint(message);
+    InstalledApps.toast(message, true);
+
+    setState(() {
+      apps = result;
+      loading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(),
+      appBar: AppBar(title: const Text("Installed Apps")),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : apps == null
+              ? const Center(child: Text("Error occurred"))
+              : _buildListView(),
     );
   }
 
-  AppBar _buildAppBar() {
-    return AppBar(title: Text("Installed Apps"));
-  }
-
-  Widget _buildBody() {
-    return FutureBuilder<List<AppInfo>>(
-      future: InstalledApps.getInstalledApps(
-        excludeSystemApps: false,
-        withIcon: true,
-      ),
-      builder: (
-        BuildContext buildContext,
-        AsyncSnapshot<List<AppInfo>> snapshot,
-      ) {
-        return snapshot.connectionState == ConnectionState.done
-            ? snapshot.hasData
-                ? _buildListView(snapshot.data ?? [])
-                : _buildError()
-            : _buildProgressIndicator();
-      },
-    );
-  }
-
-  Widget _buildListView(List<AppInfo> apps) {
+  Widget _buildListView() {
     return ListView.builder(
-      itemCount: apps.length,
-      itemBuilder: (context, index) => _buildListItem(context, apps[index]),
+      itemCount: apps!.length,
+      itemBuilder: _buildListItem,
     );
   }
 
-  Widget _buildListItem(BuildContext context, AppInfo app) {
+  Widget _buildListItem(BuildContext context, int index) {
+    final AppInfo app = apps![index];
     return Card(
       child: ListTile(
         leading: CircleAvatar(
@@ -53,21 +69,15 @@ class AppListScreen extends StatelessWidget {
         ),
         title: Text(app.name),
         subtitle: Text(app.getVersionInfo()),
+        trailing: Text(
+          app.platformType.name[0],
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        ),
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AppInfoScreen(app: app)),
+          MaterialPageRoute(builder: (_) => AppInfoScreen(app: app)),
         ),
       ),
-    );
-  }
-
-  Widget _buildProgressIndicator() {
-    return Center(child: Text("Getting installed apps ...."));
-  }
-
-  Widget _buildError() {
-    return Center(
-      child: Text("Error occurred while getting installed apps ...."),
     );
   }
 }

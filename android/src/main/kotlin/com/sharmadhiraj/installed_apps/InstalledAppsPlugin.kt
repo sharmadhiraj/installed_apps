@@ -12,8 +12,9 @@ import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
 import androidx.core.net.toUri
 import com.sharmadhiraj.installed_apps.Util.Companion.convertAppToMap
+import com.sharmadhiraj.installed_apps.Util.Companion.getLaunchablePackageNames
+import com.sharmadhiraj.installed_apps.Util.Companion.getPackageInfo
 import com.sharmadhiraj.installed_apps.Util.Companion.getPackageManager
-import com.sharmadhiraj.installed_apps.Util.Companion.isLaunchableApp
 import com.sharmadhiraj.installed_apps.Util.Companion.isSystemApp
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -100,7 +101,7 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
 
             "isSystemApp" -> {
                 val packageName = call.argument<String>("package_name") ?: ""
-                result.success(isSystemApp(getPackageManager(context!!), packageName))
+                result.success(isSystemApp(getPackageInfo(context!!, packageName)))
             }
 
             "uninstallApp" -> {
@@ -125,31 +126,50 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
         platformType: PlatformType?
     ): List<Map<String, Any?>> {
         val packageManager = getPackageManager(context!!)
+        val packageInfos = packageManager.getInstalledPackages(0)
+        val packageInfoMap = packageInfos.associateBy { it.packageName }
         var installedApps = packageManager.getInstalledApplications(0)
-        if (excludeSystemApps)
+
+        if (excludeSystemApps) {
             installedApps =
-                installedApps.filter { app -> !isSystemApp(packageManager, app.packageName) }
-        if (excludeNonLaunchableApps)
+                installedApps.filter { app -> !isSystemApp(packageInfoMap[app.packageName]) }
+        }
+        val launchablePackageNames = getLaunchablePackageNames(packageManager)
+        if (excludeNonLaunchableApps) {
+            installedApps = installedApps.filter { app ->
+                launchablePackageNames.contains(app.packageName)
+            }
+        }
+        if (packageNamePrefix.isNotEmpty()) {
+            val prefixLower = packageNamePrefix.lowercase(ENGLISH)
+            installedApps = installedApps.filter { app ->
+                app.packageName.lowercase(ENGLISH).startsWith(prefixLower)
+            }
+        }
+
+        if (platformType != null) {
             installedApps =
-                installedApps.filter { app -> isLaunchableApp(packageManager, app.packageName) }
-        if (packageNamePrefix.isNotEmpty())
-            installedApps = installedApps.filter { app ->
-                app.packageName.startsWith(
-                    packageNamePrefix.lowercase(ENGLISH)
-                )
-            }
-        if (platformType != null)
-            installedApps = installedApps.filter { app ->
-                PlatformTypeUtil.getPlatform(app) == platformType.value
-            }
+                installedApps.filter { app ->
+                    PlatformTypeUtil.getPlatform(
+                        packageManager,
+                        app
+                    ) == platformType.value
+                }
+        }
         return installedApps.map { app ->
             convertAppToMap(
                 context!!,
+                packageManager,
                 app,
+                packageInfoMap[app.packageName],
                 withIcon,
+                isSystemAppOverride = if (excludeSystemApps) false else null,
+                isLaunchableOverride = launchablePackageNames.contains(app.packageName),
+                platformTypeOverride = platformType?.value,
             )
         }
     }
+
 
     private fun startApp(packageName: String?): Boolean {
         if (packageName.isNullOrBlank()) return false
@@ -188,10 +208,19 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
         packageManager: PackageManager,
         packageName: String
     ): Map<String, Any?>? {
-        var installedApps = packageManager.getInstalledApplications(0)
-        installedApps = installedApps.filter { app -> app.packageName == packageName }
-        return if (installedApps.isEmpty()) null
-        else convertAppToMap(context!!, installedApps[0], true)
+        val app = packageManager
+            .getInstalledApplications(0)
+            .firstOrNull { it.packageName == packageName }
+
+        return app?.let {
+            convertAppToMap(
+                context!!,
+                packageManager,
+                it,
+                packageManager.getPackageInfo(app.packageName, 0),
+                true
+            )
+        }
     }
 
     private fun uninstallApp(packageName: String): Boolean {
