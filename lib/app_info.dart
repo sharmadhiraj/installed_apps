@@ -33,12 +33,12 @@ class AppInfo {
       name: data["name"],
       icon: data["icon"],
       packageName: data["package_name"],
-      versionName: data["version_name"],
-      versionCode: data["version_code"],
+      versionName: data["version_name"] ?? "1.0.0",
+      versionCode: data["version_code"] ?? 1,
       platformType: PlatformType.parse(data["platform_type"]),
-      installedTimestamp: data["installed_timestamp"],
-      isSystemApp: data["is_system_app"],
-      isLaunchableApp: data["is_launchable_app"],
+      installedTimestamp: data["installed_timestamp"] ?? 0,
+      isSystemApp: data["is_system_app"] ?? false,
+      isLaunchableApp: data["is_launchable_app"] ?? true,
       category: AppCategory.fromValue(data["category"]),
     );
   }
