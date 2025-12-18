@@ -12,6 +12,7 @@ import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
 import androidx.core.net.toUri
 import com.sharmadhiraj.installed_apps.Util.Companion.convertAppToMap
+import com.sharmadhiraj.installed_apps.Util.Companion.getLaunchablePackageNames
 import com.sharmadhiraj.installed_apps.Util.Companion.getPackageInfo
 import com.sharmadhiraj.installed_apps.Util.Companion.getPackageManager
 import com.sharmadhiraj.installed_apps.Util.Companion.isSystemApp
@@ -134,8 +135,10 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
                 installedApps.filter { app -> !isSystemApp(packageInfoMap[app.packageName]) }
         }
         val launchablePackageNames = getLaunchablePackageNames(packageManager)
-        installedApps = installedApps.filter { app ->
-            launchablePackageNames.contains(app.packageName)
+        if (excludeNonLaunchableApps) {
+            installedApps = installedApps.filter { app ->
+                launchablePackageNames.contains(app.packageName)
+            }
         }
         if (packageNamePrefix.isNotEmpty()) {
             val prefixLower = packageNamePrefix.lowercase(ENGLISH)
@@ -153,7 +156,7 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
                     ) == platformType.value
                 }
         }
-        return installedApps.mapNotNull { app ->
+        return installedApps.map { app ->
             convertAppToMap(
                 context!!,
                 packageManager,
@@ -161,7 +164,7 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
                 packageInfoMap[app.packageName],
                 withIcon,
                 isSystemAppOverride = if (excludeSystemApps) false else null,
-                isLaunchableOverride = if (excludeNonLaunchableApps) true else null,
+                isLaunchableOverride = launchablePackageNames.contains(app.packageName),
                 platformTypeOverride = platformType?.value,
             )
         }
@@ -243,13 +246,4 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
         }
     }
 
-    private fun getLaunchablePackageNames(packageManager: PackageManager): Set<String> {
-        val launchableApps = packageManager.queryIntentActivities(
-            Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_LAUNCHER)
-            },
-            0
-        )
-        return launchableApps.map { it.activityInfo.packageName }.toSet()
-    }
 }

@@ -1,6 +1,7 @@
 package com.sharmadhiraj.installed_apps
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -111,6 +112,16 @@ class Util {
             } catch (_: PackageManager.NameNotFoundException) {
                 null
             }
+        }
+
+        fun getLaunchablePackageNames(packageManager: PackageManager): Set<String> {
+            val launchableApps = packageManager.queryIntentActivities(
+                Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_LAUNCHER)
+                },
+                0
+            )
+            return launchableApps.map { it.activityInfo.packageName }.toSet()
         }
     }
 }
