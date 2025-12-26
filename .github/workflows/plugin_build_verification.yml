@@ -2,63 +2,17 @@ name: Verify Plugin Build
 
 on:
   workflow_dispatch:
+    inputs:
+      run_mode:
+        description: "Which flutter & kotlin versions to run"
+        required: true
+        default: "full matrix (latest 5x5)"
+        type: choice
+        options:
+          - full matrix (latest 5x5)
+          - latest only
 
 jobs:
-
-  fetch-versions:
-    runs-on: ubuntu-latest
-    outputs:
-      flutter_versions: ${{ steps.set-flutter.outputs.versions }}
-      kotlin_versions: ${{ steps.set-kotlin.outputs.versions }}
-    steps:
-      - name: Fetch Flutter Versions
-        id: set-flutter
-        run: |
-          VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | \
-            jq -c '
-              .releases
-              | reduce .[] as $r (
-                  {seen: [], out: []};
-                  if ($r.channel == "stable")
-                     and ($r.version | test("^[v]?[0-9]+\\.[0-9]+\\.[0-9]+"))
-                  then
-                    ($r.version | sub("^v"; "") | capture("(?<mm>[0-9]+\\.[0-9]+)")) as $v
-                    | if (.seen | index($v.mm)) then .
-                      else
-                        .seen += [$v.mm]
-                        | .out += [$r.version | sub("^v"; "")]
-                      end
-                  else .
-                  end
-                )
-              | .out[0:5]
-            ')
-          echo "Fetched Flutter Versions: $VERSIONS"
-          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
-
-      - name: Fetch Kotlin Versions
-        id: set-kotlin
-        run: |
-          VERSIONS=$(curl -s https://endoflife.date/api/v1/products/kotlin/ | \
-            jq -c '
-              .result.releases
-              | reduce .[] as $r (
-                  {seen: [], out: []};
-                  ($r.latest.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+")) as $ok
-                  | if $ok then
-                      ($r.latest.name | capture("(?<mm>[0-9]+\\.[0-9]+)")) as $v
-                      | if (.seen | index($v.mm)) then .
-                        else
-                          .seen += [$v.mm]
-                          | .out += [$r.latest.name]
-                        end
-                    else .
-                    end
-                )
-              | .out[0:5]
-            ')
-          echo "Fetched Kotlin Versions: $VERSIONS"
-          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
   verify-plugin:
     needs: fetch-versions
@@ -98,3 +52,66 @@ jobs:
         run: flutter build apk --debug --no-tree-shake-icons
         env:
           GRADLE_OPTS: "-Xmx4g"
+
+  fetch-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      flutter_versions: ${{ steps.set-flutter.outputs.versions }}
+      kotlin_versions: ${{ steps.set-kotlin.outputs.versions }}
+    steps:
+      - name: Fetch Flutter Versions
+        id: set-flutter
+        run: |
+          SLICE='[0:5]'
+          if [ "${{ github.event.inputs.run_mode }}" == "latest only" ]; then
+           SLICE='[0:1]'
+          fi
+          VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | \
+            jq -c '
+              .releases
+              | reduce .[] as $r (
+                  {seen: [], out: []};
+                  if ($r.channel == "stable")
+                     and ($r.version | test("^[v]?[0-9]+\\.[0-9]+\\.[0-9]+"))
+                  then
+                    ($r.version | sub("^v"; "") | capture("(?<mm>[0-9]+\\.[0-9]+)")) as $v
+                    | if (.seen | index($v.mm)) then .
+                      else
+                        .seen += [$v.mm]
+                        | .out += [$r.version | sub("^v"; "")]
+                      end
+                  else .
+                  end
+                )
+              | .out$SLICE
+            ')
+          echo "Fetched Flutter Versions: $VERSIONS"
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
+
+      - name: Fetch Kotlin Versions
+        id: set-kotlin
+        run: |
+          SLICE='[0:5]'
+          if [ "${{ github.event.inputs.run_mode }}" == "latest only" ]; then
+            SLICE='[0:1]'
+          fi
+          VERSIONS=$(curl -s https://endoflife.date/api/v1/products/kotlin/ | \
+            jq -c '
+              .result.releases
+              | reduce .[] as $r (
+                  {seen: [], out: []};
+                  ($r.latest.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+")) as $ok
+                  | if $ok then
+                      ($r.latest.name | capture("(?<mm>[0-9]+\\.[0-9]+)")) as $v
+                      | if (.seen | index($v.mm)) then .
+                        else
+                          .seen += [$v.mm]
+                          | .out += [$r.latest.name]
+                        end
+                    else .
+                    end
+                )
+              | .out$SLICE
+            ')
+          echo "Fetched Kotlin Versions: $VERSIONS"
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
