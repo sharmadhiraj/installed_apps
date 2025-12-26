@@ -65,8 +65,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        flutter-version: ${{ fromJson(needs.setup-matrix.outputs.flutter_versions) }}
-        kotlin-version: ${{ fromJson(needs.setup-matrix.outputs.kotlin_versions) }}
+        flutter-version: ${{ fromJson(needs.fetch-versions.outputs.flutter_versions) }}
+        kotlin-version: ${{ fromJson(needs.fetch-versions.outputs.kotlin_versions) }}
 
     steps:
       - name: Checkout repository
