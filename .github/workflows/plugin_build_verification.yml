@@ -51,6 +51,7 @@ jobs:
           fi
 
       - name: Set Kotlin version
+        shell: bash
         run: |
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             pwsh -Command "(Get-Content example/android/settings.gradle) -replace 'id \"org.jetbrains.kotlin.android\" version \".*\"', 'id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"' | Set-Content example/android/settings.gradle"
@@ -59,7 +60,6 @@ jobs:
           else
             sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
           fi
-        shell: bash
 
       - name: Get example dependencies
         working-directory: example
