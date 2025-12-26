@@ -15,15 +15,48 @@ jobs:
         id: set-flutter
         run: |
           VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | \
-            jq -c '[.releases[] | select(.channel=="stable")] | group_by(.version | split(".") | .[0:2] | join(".")) | reverse | [.[0:5][] | .[0].version]')
+            jq -r '
+              .releases
+              | reduce .[] as $r (
+                  {seen: [], out: []};
+                  if ($r.channel == "stable")
+                     and ($r.version | test("^[v]?[0-9]+\\.[0-9]+\\.[0-9]+"))
+                  then
+                    ($r.version | sub("^v"; "") | capture("(?<mm>[0-9]+\\.[0-9]+)")) as $v
+                    | if (.seen | index($v.mm)) then .
+                      else
+                        .seen += [$v.mm]
+                        | .out += [$r.version | sub("^v"; "")]
+                      end
+                  else .
+                  end
+                )
+              | .out[0:5]
+            ')
           echo "Fetched Flutter Versions: $VERSIONS"
-          cho "versions=$VERSIONS" >> $GITHUB_OUTPUT
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
       - name: Fetch Kotlin Versions
         id: set-kotlin
         run: |
-          VERSIONS=$(curl -s https://endoflife.date/api/v1/products/kotlin | \
-            jq -c '[.[] | select(.latest != null)] | group_by(.cycle | split(".") | .[0:2] | join(".")) | reverse | [.[0:5][] | .[0].latest]')
+          VERSIONS=$(curl -s https://endoflife.date/api/v1/products/kotlin/ | \
+            jq -r '
+              .result.releases
+              | reduce .[] as $r (
+                  {seen: [], out: []};
+                  ($r.latest.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+")) as $ok
+                  | if $ok then
+                      ($r.latest.name | capture("(?<mm>[0-9]+\\.[0-9]+)")) as $v
+                      | if (.seen | index($v.mm)) then .
+                        else
+                          .seen += [$v.mm]
+                          | .out += [$r.latest.name]
+                        end
+                    else .
+                    end
+                )
+              | .out[0:5]
+            ')
           echo "Fetched Kotlin Versions: $VERSIONS"
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
