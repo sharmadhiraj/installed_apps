@@ -5,7 +5,7 @@ on:
 
 jobs:
 
-  setup-matrix:
+  fetch-versions:
     runs-on: ubuntu-latest
     outputs:
       flutter_versions: ${{ steps.set-flutter.outputs.versions }}
@@ -15,7 +15,7 @@ jobs:
         id: set-flutter
         run: |
           VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | \
-            jq -r '
+            jq -c '
               .releases
               | reduce .[] as $r (
                   {seen: [], out: []};
@@ -32,7 +32,6 @@ jobs:
                   end
                 )
               | .out[0:5]
-              | join(",")
             ')
           echo "Fetched Flutter Versions: $VERSIONS"
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
@@ -41,7 +40,7 @@ jobs:
         id: set-kotlin
         run: |
           VERSIONS=$(curl -s https://endoflife.date/api/v1/products/kotlin/ | \
-            jq -r '
+            jq -c '
               .result.releases
               | reduce .[] as $r (
                   {seen: [], out: []};
@@ -57,46 +56,45 @@ jobs:
                     end
                 )
               | .out[0:5]
-              | join(",")
             ')
           echo "Fetched Kotlin Versions: $VERSIONS"
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
-#  verify-plugin:
-#    needs: setup-matrix
-#    runs-on: ubuntu-latest
-#    strategy:
-#      matrix:
-#        flutter-version: ${{ fromJson(needs.setup-matrix.outputs.flutter_versions) }}
-#        kotlin-version: ${{ fromJson(needs.setup-matrix.outputs.kotlin_versions) }}
-#
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#
-#      - name: Setup Flutter
-#        uses: subosito/flutter-action@v2
-#        with:
-#          flutter-version: ${{ matrix.flutter-version }}
-#          cache: true
-#
-#      - name: Accept Android licenses
-#        run: yes | flutter doctor --android-licenses
-#
-#      - name: Remove flutter_lints
-#        working-directory: example
-#        run: flutter pub remove flutter_lints || true
-#
-#      - name: Set Kotlin version in example (settings.gradle)
-#        run: |
-#          sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
-#
-#      - name: Get example dependencies
-#        working-directory: example
-#        run: flutter pub get
-#
-#      - name: Build example APK
-#        working-directory: example
-#        run: flutter build apk --debug --no-tree-shake-icons
-#        env:
-#          GRADLE_OPTS: "-Xmx4g"
+  verify-plugin:
+    needs: setup-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flutter-version: ${{ fromJson(needs.setup-matrix.outputs.flutter_versions) }}
+        kotlin-version: ${{ fromJson(needs.setup-matrix.outputs.kotlin_versions) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter-version }}
+          cache: true
+
+      - name: Accept Android licenses
+        run: yes | flutter doctor --android-licenses
+
+      - name: Remove flutter_lints
+        working-directory: example
+        run: flutter pub remove flutter_lints || true
+
+      - name: Set Kotlin version in example (settings.gradle)
+        run: |
+          sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
+
+      - name: Get example dependencies
+        working-directory: example
+        run: flutter pub get
+
+      - name: Build example APK
+        working-directory: example
+        run: flutter build apk --debug --no-tree-shake-icons
+        env:
+          GRADLE_OPTS: "-Xmx4g"
