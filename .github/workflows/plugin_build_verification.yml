@@ -62,12 +62,12 @@ jobs:
       - name: Fetch Flutter Versions
         id: set-flutter
         run: |
-          SLICE='[0:5]'
+          SLICE=5
           if [ "${{ github.event.inputs.run_mode }}" == "latest only" ]; then
-           SLICE='[0:1]'
+            SLICE=1
           fi
           VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | \
-            jq -c '
+            jq -c --arg slice "$SLICE" '
               .releases
               | reduce .[] as $r (
                   {seen: [], out: []};
@@ -83,7 +83,7 @@ jobs:
                   else .
                   end
                 )
-              | .out$SLICE
+              | .out[0:($slice|tonumber)]
             ')
           echo "Fetched Flutter Versions: $VERSIONS"
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
@@ -91,9 +91,9 @@ jobs:
       - name: Fetch Kotlin Versions
         id: set-kotlin
         run: |
-          SLICE='[0:5]'
+          SLICE=5
           if [ "${{ github.event.inputs.run_mode }}" == "latest only" ]; then
-            SLICE='[0:1]'
+            SLICE=1
           fi
           VERSIONS=$(curl -s https://endoflife.date/api/v1/products/kotlin/ | \
             jq -c '
