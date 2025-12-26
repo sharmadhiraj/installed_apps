@@ -13,13 +13,6 @@ class PlatformTypeUtil {
             if (applicationInfo == null) return "unknown"
             val packageName = applicationInfo.packageName.lowercase()
 
-            when {
-                packageName.contains("flutter") -> return "flutter"
-                packageName.contains("react") -> return "react_native"
-                packageName.contains("xamarin") -> return "xamarin"
-                packageName.contains("ionic") || packageName.contains("capacitor") -> return "ionic"
-            }
-
             val packageInfo = try {
                 packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
             } catch (_: PackageManager.NameNotFoundException) {
@@ -36,19 +29,25 @@ class PlatformTypeUtil {
                 }
             }
 
-            val appInfo = try {
-                packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+            val metaData = try {
+                packageManager.getApplicationInfo(
+                    packageName,
+                    PackageManager.GET_META_DATA
+                )?.metaData
             } catch (_: PackageManager.NameNotFoundException) {
-                return "unknown"
+                null
             }
 
-            appInfo.metaData?.let { meta ->
-                if (meta.containsKey("io.flutter.app.FlutterApplication")) return "flutter"
-                if (meta.containsKey("com.getcapacitor.BridgeActivity")) return "ionic"
+            metaData?.let {
+                if (it.containsKey("io.flutter.app.FlutterApplication")) return "flutter"
+                if (it.containsKey("com.getcapacitor.BridgeActivity")) return "ionic"
             }
 
+            return scanApkForPlatform(applicationInfo?.sourceDir)
+        }
 
-            val apkPath = applicationInfo?.sourceDir ?: return "unknown"
+        private fun scanApkForPlatform(apkPath: String?): String {
+            if (apkPath.isNullOrEmpty()) return "unknown"
             var zipFile: ZipFile? = null
             return try {
                 zipFile = try {

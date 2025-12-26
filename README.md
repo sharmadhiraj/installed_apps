@@ -121,6 +121,8 @@ bool? installed = await InstalledApps.isAppInstalled("com.example.myapp");
 
 ## AppCategory enum
 
+> ⚠️ Only available on Android API 28+. On lower SDK versions, all apps will have `undefined`.
+
 ```dart
 enum AppCategory {
   game(0, "Game"),
@@ -167,6 +169,7 @@ ensuring each flavor has the correct manifest without affecting core functionali
 * Android requires `QUERY_ALL_PACKAGES` permission for full app visibility. Ensure compliance with
   Play Store policies.
 * All methods catch exceptions and return default/fallback values to prevent crashes.
+* Platform type detection is heuristic and may misclassify some apps. Improvements are ongoing.
 
 ---
 
