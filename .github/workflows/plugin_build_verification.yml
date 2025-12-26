@@ -16,13 +16,15 @@ jobs:
         run: |
           VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | \
             jq -c '[.releases[] | select(.channel=="stable")] | group_by(.version | split(".") | .[0:2] | join(".")) | reverse | [.[0:5][] | .[0].version]')
-          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
+          echo "Fetched Flutter Versions: $VERSIONS"
+          cho "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
       - name: Fetch Kotlin Versions
         id: set-kotlin
         run: |
-          VERSIONS=$(curl -s endoflife.date | \
+          VERSIONS=$(curl -s https://endoflife.date/api/v1/products/kotlin | \
             jq -c '[.[] | select(.latest != null)] | group_by(.cycle | split(".") | .[0:2] | join(".")) | reverse | [.[0:5][] | .[0].latest]')
+          echo "Fetched Kotlin Versions: $VERSIONS"
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
 #  verify-plugin:
