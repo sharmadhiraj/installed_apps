@@ -11,12 +11,21 @@ on:
         options:
           - full matrix (latest 5x5)
           - latest only
+      platform:
+        description: "Runner OS platform"
+        required: true
+        default: "ubuntu"
+        type: choice
+        options:
+          - ubuntu
+          - windows
+          - macos
 
 jobs:
 
   verify-plugin:
     needs: fetch-versions
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.inputs.platform == 'windows' && 'windows-latest' || github.event.inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
     strategy:
       matrix:
         flutter-version: ${{ fromJson(needs.fetch-versions.outputs.flutter_versions) }}
@@ -39,9 +48,21 @@ jobs:
         working-directory: example
         run: flutter pub remove flutter_lints || true
 
-      - name: Set Kotlin version in example (settings.gradle)
+      - name: Set Kotlin version for macOS
+        if: runner.os == 'macOS'
+        run: sed -i '' "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
+        shell: bash
+
+      - name: Set Kotlin version for Linux
+        if: runner.os == 'Linux'
+        run: sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
+        shell: bash
+
+      - name: Set Kotlin version for Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
+          (Get-Content example/android/settings.gradle) -replace 'id "org.jetbrains.kotlin.android" version ".*"', 'id "org.jetbrains.kotlin.android" version "${{ matrix.kotlin-version }}"' | Set-Content example/android/settings.gradle
 
       - name: Get example dependencies
         working-directory: example
@@ -62,11 +83,18 @@ jobs:
       - name: Fetch Flutter Versions
         id: set-flutter
         run: |
+          case "${{ github.event.inputs.platform }}" in
+            ubuntu) FLUTTER_JSON="releases_linux.json" ;;
+            windows) FLUTTER_JSON="releases_windows.json" ;;
+            macos) FLUTTER_JSON="releases_macos.json" ;;
+          esac
+          
           SLICE=5
           if [ "${{ github.event.inputs.run_mode }}" == "latest only" ]; then
             SLICE=1
           fi
-          VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | \
+          
+          VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_JSON | \
             jq -c --arg slice "$SLICE" '
               .releases
               | reduce .[] as $r (
