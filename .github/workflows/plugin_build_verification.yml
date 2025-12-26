@@ -61,7 +61,7 @@ jobs:
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
   verify-plugin:
-    needs: setup-matrix
+    needs: versions
     runs-on: ubuntu-latest
     strategy:
       matrix:
