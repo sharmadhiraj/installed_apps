@@ -32,6 +32,7 @@ jobs:
                   end
                 )
               | .out[0:5]
+              | join(",")
             ')
           echo "Fetched Flutter Versions: $VERSIONS"
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
@@ -56,6 +57,7 @@ jobs:
                     end
                 )
               | .out[0:5]
+              | join(",")
             ')
           echo "Fetched Kotlin Versions: $VERSIONS"
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
