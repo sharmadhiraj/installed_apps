@@ -43,12 +43,7 @@ jobs:
 
       - name: Accept Android licenses
         shell: bash
-        run: |
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            pwsh -Command "flutter doctor --android-licenses | ForEach-Object { $_; Write-Output 'y' }"
-          else
-            yes | flutter doctor --android-licenses
-          fi
+        run: yes | flutter doctor --android-licenses
 
       - name: Set Kotlin version
         shell: bash
