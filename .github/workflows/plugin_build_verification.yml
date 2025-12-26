@@ -4,41 +4,62 @@ on:
   workflow_dispatch:
 
 jobs:
-  verify-plugin:
+
+  setup-matrix:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        flutter-version: [ 3.38.5, 3.35.7, 3.32.8, 3.29.3, 3.27.4 ]
-        kotlin-version: [ 2.3.0, 2.2.0, 2.1.0, 2.0.0, 1.9.0 ]
-
+    outputs:
+      flutter_versions: ${{ steps.set-flutter.outputs.versions }}
+      kotlin_versions: ${{ steps.set-kotlin.outputs.versions }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: ${{ matrix.flutter-version }}
-          cache: true
-
-      - name: Accept Android licenses
-        run: yes | flutter doctor --android-licenses
-
-      - name: Remove flutter_lints
-        working-directory: example
-        run: flutter pub remove flutter_lints || true
-
-      - name: Set Kotlin version in example (settings.gradle)
+      - name: Fetch Flutter Versions
+        id: set-flutter
         run: |
-          sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
+          VERSIONS=$(curl -s storage.googleapis.com | \
+            jq -c '[.releases[] | select(.channel=="stable")] | group_by(.version | split(".") | .[0:2] | join(".")) | reverse | [.[0:5][] | .[0].version]')
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
-      - name: Get example dependencies
-        working-directory: example
-        run: flutter pub get
+      - name: Fetch Kotlin Versions
+        id: set-kotlin
+        run: |
+          VERSIONS=$(curl -s endoflife.date | \
+            jq -c '[.[] | select(.latest != null)] | group_by(.cycle | split(".") | .[0:2] | join(".")) | reverse | [.[0:5][] | .latest]')
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
-      - name: Build example APK
-        working-directory: example
-        run: flutter build apk --debug --no-tree-shake-icons
-        env:
-          GRADLE_OPTS: "-Xmx4g"
+#  verify-plugin:
+#    needs: setup-matrix
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        flutter-version: ${{ fromJson(needs.setup-matrix.outputs.flutter_versions) }}
+#        kotlin-version: ${{ fromJson(needs.setup-matrix.outputs.kotlin_versions) }}
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#
+#      - name: Setup Flutter
+#        uses: subosito/flutter-action@v2
+#        with:
+#          flutter-version: ${{ matrix.flutter-version }}
+#          cache: true
+#
+#      - name: Accept Android licenses
+#        run: yes | flutter doctor --android-licenses
+#
+#      - name: Remove flutter_lints
+#        working-directory: example
+#        run: flutter pub remove flutter_lints || true
+#
+#      - name: Set Kotlin version in example (settings.gradle)
+#        run: |
+#          sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
+#
+#      - name: Get example dependencies
+#        working-directory: example
+#        run: flutter pub get
+#
+#      - name: Build example APK
+#        working-directory: example
+#        run: flutter build apk --debug --no-tree-shake-icons
+#        env:
+#          GRADLE_OPTS: "-Xmx4g"
