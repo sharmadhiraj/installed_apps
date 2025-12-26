@@ -43,7 +43,12 @@ jobs:
 
       - name: Accept Android licenses
         shell: bash
-        run: yes | flutter doctor --android-licenses
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            flutter doctor --android-licenses --yes
+          else
+            yes | flutter doctor --android-licenses
+          fi
 
       - name: Set Kotlin version
         shell: bash
