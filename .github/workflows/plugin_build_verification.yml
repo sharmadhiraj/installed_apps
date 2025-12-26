@@ -96,7 +96,7 @@ jobs:
             SLICE=1
           fi
           VERSIONS=$(curl -s https://endoflife.date/api/v1/products/kotlin/ | \
-            jq -c '
+            jq -c --arg slice "$SLICE" '
               .result.releases
               | reduce .[] as $r (
                   {seen: [], out: []};
@@ -111,7 +111,7 @@ jobs:
                     else .
                     end
                 )
-              | .out$SLICE
+              | .out[0:($slice|tonumber)]
             ')
           echo "Fetched Kotlin Versions: $VERSIONS"
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
