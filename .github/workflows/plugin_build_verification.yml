@@ -14,7 +14,7 @@ jobs:
       - name: Fetch Flutter Versions
         id: set-flutter
         run: |
-          VERSIONS=$(curl -s storage.googleapis.com | \
+          VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | \
             jq -c '[.releases[] | select(.channel=="stable")] | group_by(.version | split(".") | .[0:2] | join(".")) | reverse | [.[0:5][] | .[0].version]')
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
@@ -22,7 +22,7 @@ jobs:
         id: set-kotlin
         run: |
           VERSIONS=$(curl -s endoflife.date | \
-            jq -c '[.[] | select(.latest != null)] | group_by(.cycle | split(".") | .[0:2] | join(".")) | reverse | [.[0:5][] | .latest]')
+            jq -c '[.[] | select(.latest != null)] | group_by(.cycle | split(".") | .[0:2] | join(".")) | reverse | [.[0:5][] | .[0].latest]')
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
 
 #  verify-plugin:
