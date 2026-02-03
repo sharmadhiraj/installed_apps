@@ -154,16 +154,18 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
                     ) == platformType.value
                 }
         }
-        return packageInfos.map { packageInfo ->
-            convertAppToMap(
-                packageManager,
-                packageInfo,
-                withIcon,
-                isSystemAppOverride = if (excludeSystemApps) false else null,
-                isLaunchableOverride = launchablePackageNames.contains(packageInfo.packageName),
-                platformTypeOverride = platformType?.value,
-            )
-        }
+        return packageInfos
+            .filter { it.applicationInfo != null }
+            .map { packageInfo ->
+                convertAppToMap(
+                    packageManager,
+                    packageInfo,
+                    withIcon,
+                    isSystemAppOverride = if (excludeSystemApps) false else null,
+                    isLaunchableOverride = launchablePackageNames.contains(packageInfo.packageName),
+                    platformTypeOverride = platformType?.value,
+                )
+            }
     }
 
 

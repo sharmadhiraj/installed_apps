@@ -2,7 +2,7 @@ group = "com.sharmadhiraj.installed_apps"
 version = "1.0-SNAPSHOT"
 
 buildscript {
-    ext.kotlin_version = "1.8.22"
+    ext.kotlin_version = "2.2.21"
     repositories {
         google()
         mavenCentral()
@@ -29,7 +29,7 @@ android {
         namespace = "com.sharmadhiraj.installed_apps"
     }
 
-    compileSdk = 34
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

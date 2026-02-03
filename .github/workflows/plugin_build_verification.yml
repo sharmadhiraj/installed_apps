@@ -70,7 +70,7 @@ jobs:
 
       - name: Build example APK
         working-directory: example
-        run: flutter build apk --debug --no-tree-shake-icons
+        run: flutter build apk --release --no-tree-shake-icons
         env:
           GRADLE_OPTS: "-Xmx4g"
 
