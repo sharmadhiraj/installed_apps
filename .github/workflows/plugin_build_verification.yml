@@ -56,6 +56,10 @@ jobs:
             sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
           fi
 
+      - name: Run flutter doctor
+        shell: bash
+        run: flutter doctor -v
+
       - name: Remove flutter_lints from example
         working-directory: example
         run: flutter pub remove flutter_lints --offline || true
