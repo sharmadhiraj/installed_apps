@@ -1,3 +1,7 @@
+## 2.1.1
+
+* Internal fixes and improvements
+
 ## 2.1.0
 
 * Added app category information to app info
