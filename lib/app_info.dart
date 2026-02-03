@@ -30,9 +30,9 @@ class AppInfo {
 
   factory AppInfo.create(dynamic data) {
     return AppInfo(
-      name: data["name"],
+      name: data["name"] ?? "Unknown",
       icon: data["icon"],
-      packageName: data["package_name"],
+      packageName: data["package_name"] ?? "unknown.package",
       versionName: data["version_name"] ?? "1.0.0",
       versionCode: data["version_code"] ?? 1,
       platformType: PlatformType.parse(data["platform_type"]),

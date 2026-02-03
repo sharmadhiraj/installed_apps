@@ -20,7 +20,7 @@ class Util {
             isLaunchableOverride: Boolean? = null,
             platformTypeOverride: String? = null
         ): HashMap<String, Any?> {
-            val app: ApplicationInfo = packageInfo.applicationInfo
+            val app: ApplicationInfo = packageInfo.applicationInfo ?: return HashMap()
             val map = HashMap<String, Any?>()
             map["name"] = packageManager.getApplicationLabel(app)
             map["package_name"] = app.packageName
@@ -59,8 +59,8 @@ class Util {
         }
 
         fun isSystemApp(packageInfo: PackageInfo?): Boolean {
-            if (packageInfo == null) return false
-            return (packageInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+            val appInfo = packageInfo?.applicationInfo ?: return false
+            return (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
         }
 
         fun isLaunchableApp(packageManager: PackageManager, packageName: String): Boolean {
