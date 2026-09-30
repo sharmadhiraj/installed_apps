@@ -25,8 +25,10 @@ class Util {
             map["name"] = packageManager.getApplicationLabel(app)
             map["package_name"] = app.packageName
             map["icon"] =
-                if (withIcon) DrawableUtil.drawableToByteArray(app.loadIcon(packageManager))
-                else null
+                if (withIcon) {
+                    DrawableUtil.drawableToByteArray(app.loadIcon(packageManager))
+                        .takeIf { it.isNotEmpty() }
+                } else null
 
             map["version_name"] = packageInfo.versionName
             map["version_code"] = getVersionCode(packageInfo)
@@ -37,10 +39,6 @@ class Util {
             map["is_system_app"] = isSystemAppOverride ?: isSystemApp(packageInfo)
             map["is_launchable_app"] = isLaunchableOverride
                 ?: isLaunchableApp(packageManager, packageInfo.packageName)
-//                map["has_multiple_signers"] =
-//                    hasMultipleSigners(packageManager, packageInfo.packageName)
-//                map["certificate_hashes"] =
-//                    getCertificateHashes(packageInfo)
             if (SDK_INT >= Build.VERSION_CODES.O && app.category != ApplicationInfo.CATEGORY_UNDEFINED) {
                 map["category"] = app.category
             }
@@ -71,38 +69,6 @@ class Util {
                 false
             }
         }
-
-//        fun hasMultipleSigners(packageManager: PackageManager, packageName: String): Boolean {
-//            return if (SDK_INT >= P) {
-//                packageManager
-//                    .getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
-//                    .signingInfo
-//                    .hasMultipleSigners()
-//            } else {
-//                return false
-//            }
-//        }
-//
-//        fun getCertificateHashes(
-//            packageInfo: PackageInfo
-//        ): List<String> {
-//            if (SDK_INT < P) return emptyList()
-//            val signingInfo = packageInfo.signingInfo ?: return emptyList()
-//            val signatures = if (signingInfo.hasMultipleSigners()) {
-//                signingInfo.apkContentsSigners
-//            } else {
-//                signingInfo.signingCertificateHistory
-//            }
-//            val hashes = signatures.map { signature ->
-//                MessageDigest
-//                    .getInstance("SHA-256")
-//                    .digest(signature.toByteArray())
-//                    .joinToString(":") {
-//                        "%02X".format(it)
-//                    }
-//            }
-//            return hashes
-//        }
 
         fun getPackageInfo(context: Context, packageName: String): PackageInfo? {
             return try {
