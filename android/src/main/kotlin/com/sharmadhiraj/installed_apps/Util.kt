@@ -18,7 +18,8 @@ class Util {
             withIcon: Boolean,
             isSystemAppOverride: Boolean? = null,
             isLaunchableOverride: Boolean? = null,
-            platformTypeOverride: String? = null
+            platformTypeOverride: String? = null,
+            detectPlatformType: Boolean = true
         ): HashMap<String, Any?> {
             val app: ApplicationInfo = packageInfo.applicationInfo ?: return HashMap()
             val map = HashMap<String, Any?>()
@@ -34,7 +35,8 @@ class Util {
             map["version_code"] = getVersionCode(packageInfo)
             map["platform_type"] =
                 platformTypeOverride
-                    ?: PlatformTypeUtil.getPlatform(packageManager, app)
+                    ?: if (detectPlatformType) PlatformTypeUtil.getPlatform(packageManager, app)
+                    else "native_or_others"
             map["installed_timestamp"] = packageInfo.lastUpdateTime
             map["is_system_app"] = isSystemAppOverride ?: isSystemApp(packageInfo)
             map["is_launchable_app"] = isLaunchableOverride

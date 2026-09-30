@@ -85,6 +85,8 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
                 val withIcon = call.argument<Boolean>("with_icon") ?: false
                 val packageNamePrefix = call.argument<String>("package_name_prefix") ?: ""
                 val platformTypeName = call.argument<String>("platform_type") ?: ""
+                val detectPlatformType = call.argument<Boolean>("detect_platform_type") ?: true
+                val packageNames = call.argument<List<String>>("package_names")
 
                 val executor = executor
                 if (executor == null) {
@@ -99,7 +101,9 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
                             excludeNonLaunchableApps,
                             withIcon,
                             packageNamePrefix,
-                            PlatformType.fromString(platformTypeName)
+                            PlatformType.fromString(platformTypeName),
+                            detectPlatformType,
+                            packageNames
                         )
                         mainHandler.post { result.success(apps) }
                     } catch (e: Exception) {
@@ -129,7 +133,8 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
 
             "getAppInfo" -> {
                 val packageName = call.argument<String>("package_name") ?: ""
-                result.success(getAppInfo(context.packageManager, packageName))
+                val withIcon = call.argument<Boolean>("with_icon") ?: true
+                result.success(getAppInfo(context.packageManager, packageName, withIcon))
             }
 
             "isSystemApp" -> {
@@ -157,10 +162,16 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
         excludeNonLaunchableApps: Boolean,
         withIcon: Boolean,
         packageNamePrefix: String,
-        platformType: PlatformType?
+        platformType: PlatformType?,
+        detectPlatformType: Boolean,
+        packageNames: List<String>?
     ): List<Map<String, Any?>> {
         val packageManager = context.packageManager
-        var packageInfos = packageManager.getInstalledPackages(0)
+        var packageInfos = if (packageNames != null) {
+            packageNames.distinct().mapNotNull { getPackageInfo(context, it) }
+        } else {
+            packageManager.getInstalledPackages(0)
+        }
 
         if (excludeSystemApps) {
             packageInfos =
@@ -198,6 +209,7 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
                     isSystemAppOverride = if (excludeSystemApps) false else null,
                     isLaunchableOverride = launchablePackageNames.contains(packageInfo.packageName),
                     platformTypeOverride = platformType?.value,
+                    detectPlatformType = detectPlatformType,
                 )
             }
     }
@@ -241,14 +253,15 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
 
     private fun getAppInfo(
         packageManager: PackageManager,
-        packageName: String
+        packageName: String,
+        withIcon: Boolean
     ): Map<String, Any?>? {
         return try {
             val packageInfo = packageManager.getPackageInfo(packageName, 0)
             convertAppToMap(
                 packageManager,
                 packageInfo,
-                true
+                withIcon
             )
         } catch (_: PackageManager.NameNotFoundException) {
             null
