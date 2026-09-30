@@ -3,16 +3,36 @@ import 'dart:typed_data';
 import 'package:installed_apps/app_category.dart';
 import 'package:installed_apps/platform_type.dart';
 
+/// Information about an installed app.
 class AppInfo {
+  /// Display name of the app.
   final String name;
+
+  /// PNG bytes of the app icon, or null when icons were not requested or could not be loaded.
   final Uint8List? icon;
+
+  /// Unique package name (application id), for example `com.example.app`.
   final String packageName;
+
+  /// Human readable version, for example `1.2.3`.
   final String versionName;
+
+  /// Internal version number of the app.
   final int versionCode;
+
+  /// Framework the app is built with (detected heuristically).
   final PlatformType platformType;
+
+  /// Last update time in milliseconds since epoch.
   final int installedTimestamp;
+
+  /// Whether the app is part of the system image.
   final bool isSystemApp;
+
+  /// Whether the app has a launcher activity and can be started.
   final bool isLaunchableApp;
+
+  /// Store category. [AppCategory.undefined] below Android 8.0 or when not declared.
   final AppCategory category;
 
   const AppInfo({
@@ -43,18 +63,63 @@ class AppInfo {
     );
   }
 
+  AppInfo copyWith({
+    String? name,
+    Uint8List? icon,
+    String? packageName,
+    String? versionName,
+    int? versionCode,
+    PlatformType? platformType,
+    int? installedTimestamp,
+    bool? isSystemApp,
+    bool? isLaunchableApp,
+    AppCategory? category,
+  }) {
+    return AppInfo(
+      name: name ?? this.name,
+      icon: icon ?? this.icon,
+      packageName: packageName ?? this.packageName,
+      versionName: versionName ?? this.versionName,
+      versionCode: versionCode ?? this.versionCode,
+      platformType: platformType ?? this.platformType,
+      installedTimestamp: installedTimestamp ?? this.installedTimestamp,
+      isSystemApp: isSystemApp ?? this.isSystemApp,
+      isLaunchableApp: isLaunchableApp ?? this.isLaunchableApp,
+      category: category ?? this.category,
+    );
+  }
+
+  /// Version as `versionName (versionCode)`.
   String getVersionInfo() => "$versionName ($versionCode)";
 
+  @override
+  bool operator ==(Object other) =>
+      other is AppInfo &&
+      other.packageName == packageName &&
+      other.versionCode == versionCode &&
+      other.versionName == versionName;
+
+  @override
+  int get hashCode => Object.hash(packageName, versionCode, versionName);
+
+  @override
+  String toString() =>
+      "AppInfo(name: $name, packageName: $packageName, version: ${getVersionInfo()}, "
+      "platformType: $platformType, isSystemApp: $isSystemApp, category: $category)";
+
+  /// Parses a list returned by the native side, skipping invalid entries. Sorted by name.
   static List<AppInfo> parseList(dynamic apps) {
     if (apps == null || apps is! List || apps.isEmpty) return [];
     final List<AppInfo> appInfoList = apps
-        .where((element) =>
-            element is Map &&
-            element.containsKey("name") &&
-            element.containsKey("package_name"))
-        .map((app) => AppInfo.create(app))
-        .toList();
-    appInfoList.sort((a, b) => a.name.compareTo(b.name));
+        .where(
+          (element) =>
+              element is Map &&
+              element.containsKey("name") &&
+              element.containsKey("package_name"),
+        )
+        .map(AppInfo.create)
+        .toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
     return appInfoList;
   }
 }

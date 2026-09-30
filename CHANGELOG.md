@@ -1,3 +1,19 @@
+## 2.2.0
+
+* Added `packageNames` option to `getInstalledApps` to restrict results to specific packages.
+* Added `detectPlatformType` option to `getInstalledApps` to skip the slower platform detection.
+* Added `withIcon` option to `getAppInfo`.
+* Added `AppInfo.copyWith`, `==` and `hashCode`.
+* Fixed Activity leak and stale context after the Activity detaches.
+* `getInstalledApps` no longer hangs on native errors and now replies on the main thread.
+* `openSettings` and `toast` now complete their native calls.
+* Launching settings and uninstall screens works when no Activity is attached.
+* Apps whose icon cannot be rendered now return a null icon instead of empty bytes.
+* Modernized Android Gradle setup: no pinned AGP or Kotlin versions, works with old and new Kotlin Gradle Plugins, no androidx dependency.
+* Faster platform detection (single pass over APK entries).
+* Models and enums are now exported from `installed_apps.dart`.
+* Added `AppInfo.toString`, unit tests and a CI workflow.
+
 ## 2.1.1
 
 * Internal fixes and improvements

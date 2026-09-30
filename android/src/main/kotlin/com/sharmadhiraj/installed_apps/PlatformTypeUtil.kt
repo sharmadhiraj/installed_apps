@@ -33,7 +33,7 @@ class PlatformTypeUtil {
                 packageManager.getApplicationInfo(
                     packageName,
                     PackageManager.GET_META_DATA
-                )?.metaData
+                ).metaData
             } catch (_: PackageManager.NameNotFoundException) {
                 null
             }
@@ -43,34 +43,40 @@ class PlatformTypeUtil {
                 if (it.containsKey("com.getcapacitor.BridgeActivity")) return "ionic"
             }
 
-            return scanApkForPlatform(applicationInfo?.sourceDir)
+            return scanApkForPlatform(applicationInfo.sourceDir)
         }
 
         private fun scanApkForPlatform(apkPath: String?): String {
             if (apkPath.isNullOrEmpty()) return "unknown"
             var zipFile: ZipFile? = null
             return try {
-                zipFile = try {
-                    ZipFile(apkPath)
-                } catch (e: java.util.zip.ZipException) {
-                    Log.w("InstalledAppsPlugin", "Invalid APK zip: ${e.message}")
-                    return "unknown"
-                }
-                val entries = zipFile?.entries()
-                    ?.asSequence()
-                    ?.map { it.name }
-                    ?.toList() ?: emptyList<String>()
-                when {
-                    entries.any { it.contains("/flutter_assets/") } -> "flutter"
-                    entries.any {
-                        it.contains("react_native_routes.json") || it.contains("libs_reactnativecore_components") || it.contains(
-                            "node_modules_reactnative"
-                        )
-                    } -> "react_native"
+                val zip = ZipFile(apkPath)
+                zipFile = zip
+                run {
+                    var flutter = false
+                    var reactNative = false
+                    var xamarin = false
+                    var ionic = false
+                    for (entry in zip.entries()) {
+                        val name = entry.name
+                        when {
+                            name.contains("/flutter_assets/") -> flutter = true
+                            name.contains("react_native_routes.json") ||
+                                    name.contains("libs_reactnativecore_components") ||
+                                    name.contains("node_modules_reactnative") -> reactNative = true
 
-                    entries.any { it.contains("libaot-Xamarin") } -> "xamarin"
-                    entries.any { it.contains("node_modules_ionic") } -> "ionic"
-                    else -> "native_or_others"
+                            name.contains("libaot-Xamarin") -> xamarin = true
+                            name.contains("node_modules_ionic") -> ionic = true
+                        }
+                        if (flutter) break
+                    }
+                    when {
+                        flutter -> "flutter"
+                        reactNative -> "react_native"
+                        xamarin -> "xamarin"
+                        ionic -> "ionic"
+                        else -> "native_or_others"
+                    }
                 }
             } catch (e: Exception) {
                 Log.w("InstalledAppsPlugin", "getPlatform: ${e.message}")

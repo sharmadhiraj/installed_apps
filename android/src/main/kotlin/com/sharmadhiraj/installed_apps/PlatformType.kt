@@ -8,7 +8,7 @@ enum class PlatformType(val value: String) {
 
     companion object {
         fun fromString(platform: String): PlatformType? {
-            if (platform.isEmpty()) return null;
+            if (platform.isEmpty()) return null
             return when (platform.lowercase()) {
                 "flutter" -> FLUTTER
                 "react_native" -> REACT_NATIVE

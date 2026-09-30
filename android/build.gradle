@@ -1,26 +1,6 @@
 group = "com.sharmadhiraj.installed_apps"
 version = "1.0-SNAPSHOT"
 
-buildscript {
-    ext.kotlin_version = "2.2.21"
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.13.2")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
@@ -29,27 +9,26 @@ android {
         namespace = "com.sharmadhiraj.installed_apps"
     }
 
-    compileSdk = 36
+    compileSdk = 34
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
-    }
-
     sourceSets {
         main.java.srcDirs += "src/main/kotlin"
-        test.java.srcDirs += "src/test/kotlin"
     }
 
     defaultConfig {
         minSdk = 16
     }
+}
 
-    dependencies {
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach { task ->
+    if (task.hasProperty("compilerOptions")) {
+        task.compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+    } else {
+        task.kotlinOptions.jvmTarget = "1.8"
     }
-
 }
