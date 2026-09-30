@@ -1,27 +1,27 @@
 # Installed Apps
 
-**Installed Apps** is a Flutter plugin that provides utilities to interact with installed apps on a
-device. You can list installed apps, get app info, launch apps, open settings, and more.
+[![pub package](https://img.shields.io/pub/v/installed_apps.svg)](https://pub.dev/packages/installed_apps)
 
-> ⚠️ Currently, only Android is supported. iOS methods return default/fallback values.
+A Flutter plugin to list installed apps and work with them: get app info, launch, open settings,
+uninstall, and more.
 
----
+> **Android only.** On other platforms the methods return their fallback values (`[]` or `null`).
 
 ## Features
 
-* List installed apps with optional filters:
-    * Exclude system apps
-    * Exclude non-launchable apps
-    * Filter by package name prefix
-    * Filter by platform type
-* Get detailed app info
-* Launch apps by package name
-* Open app settings
-* Check if an app is system or installed
-* Uninstall apps
-* Show toast messages
+- List installed apps, filtered by system/launchable status, package prefix, package names or
+  platform type (Flutter, React Native, Xamarin, Ionic)
+- Get app info: name, icon, version, install time, category and more
+- Launch an app, open its settings screen, uninstall it
+- Check if an app is installed or is a system app
 
----
+## Use cases
+
+- App launchers and app drawers
+- VPN split tunneling and per-app network rules
+- Parental control, kiosk and app blocker tools
+- Security and inventory tools that audit installed apps
+- Checking whether a companion app is installed before deep linking to it
 
 ## Installation
 
@@ -29,155 +29,121 @@ device. You can list installed apps, get app info, launch apps, open settings, a
 flutter pub add installed_apps
 ```
 
-Or check the [Installation Guide](https://pub.dev/packages/installed_apps/install).
+```dart
+import 'package:installed_apps/installed_apps.dart';
+```
 
-Example project: [GitHub](https://github.com/sharmadhiraj/installed_apps/tree/master/example)
+One import gives you `InstalledApps`, `AppInfo`, `AppCategory` and `PlatformType`.
 
----
+Requires Android `minSdk` 21 and Java 17. See the
+[example app](https://github.com/sharmadhiraj/installed_apps/tree/master/example) for a full demo.
 
-## Usage
-
-### Get Installed Apps
+## Quick start
 
 ```
-List<AppInfo> apps = await InstalledApps.getInstalledApps(
-  // Optional: whether to exclude system apps from the list. Default is true.
-  excludeSystemApps: true,
 
-  // Optional: whether to exclude apps that cannot be launched (no launch intent). Default is true.
-  excludeNonLaunchableApps: true,
+final apps = await InstalledApps.getInstalledApps(withIcon: true);
 
-  // Optional: whether to include app icons in the result. Default is false.
-  withIcon: false,
+for (final app in apps) {
+  print("${app.name} (${app.packageName}) ${app.getVersionInfo()}");
+}
 
-  // Optional: filter apps whose package names start with this prefix. Default is null (no filtering).
-  packageNamePrefix: "com.example",
+await InstalledApps.startApp(apps.first.packageName);
+```
 
-  // Optional: filter apps by platform type (Flutter, React Native, etc.). Default is null (no filtering).
+## API
+
+| Method                                | Returns                 | Description                             |
+|---------------------------------------|-------------------------|-----------------------------------------|
+| `getInstalledApps(...)`               | `Future<List<AppInfo>>` | List installed apps, sorted by name     |
+| `getAppInfo(packageName, {withIcon})` | `Future<AppInfo?>`      | App details, or `null` if not installed |
+| `startApp(packageName)`               | `Future<bool?>`         | Launch an app                           |
+| `openSettings(packageName)`           | `void`                  | Open the app's system settings screen   |
+| `uninstallApp(packageName)`           | `Future<bool?>`         | Show the uninstall prompt               |
+| `isAppInstalled(packageName)`         | `Future<bool?>`         | Whether the app is installed            |
+| `isSystemApp(packageName)`            | `Future<bool?>`         | Whether the app is a system app         |
+| `toast(message, isShortLength)`       | `void`                  | Show an Android toast                   |
+
+### `getInstalledApps` options
+
+All options are optional.
+
+| Option                     | Default | Description                                                                                                                          |
+|----------------------------|---------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `excludeSystemApps`        | `true`  | Hide system apps                                                                                                                     |
+| `excludeNonLaunchableApps` | `true`  | Hide apps without a launcher activity                                                                                                |
+| `withIcon`                 | `false` | Include icons (`AppInfo.icon`, PNG bytes). Slower, enable only when needed                                                           |
+| `packageNamePrefix`        | `null`  | Only apps whose package name starts with this (case-insensitive)                                                                     |
+| `packageNames`             | `null`  | Only these packages. Not-installed ones are ignored, an empty list returns `[]`                                                      |
+| `platformType`             | `null`  | Only apps built with this platform, e.g. `PlatformType.flutter`                                                                      |
+| `detectPlatformType`       | `true`  | Set `false` to skip platform detection (faster). `AppInfo.platformType` is then `nativeOrOthers`. Ignored when `platformType` is set |
+
+```
+// Flutter apps only, including system apps
+final flutterApps = await InstalledApps.getInstalledApps(
+  excludeSystemApps: false,
   platformType: PlatformType.flutter,
+);
+
+// Look up specific apps, fast
+final known = await InstalledApps.getInstalledApps(
+  packageNames: ["com.whatsapp", "com.google.android.gm"],
+  detectPlatformType: false,
 );
 ```
 
-### Get App Info
+### `AppInfo`
 
-```
-AppInfo? app = await InstalledApps.getAppInfo("com.example.myapp");
-```
+| Field                         | Type             | Notes                                                                                                                                                                  |
+|-------------------------------|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `name`                        | `String`         | Display name                                                                                                                                                           |
+| `packageName`                 | `String`         | Unique app id                                                                                                                                                          |
+| `icon`                        | `Uint8List?`     | Only when requested with `withIcon`                                                                                                                                    |
+| `versionName` / `versionCode` | `String` / `int` | `getVersionInfo()` gives `"1.2.3 (45)"`                                                                                                                                |
+| `platformType`                | `PlatformType`   | `flutter`, `reactNative`, `xamarin`, `ionic`, `nativeOrOthers`                                                                                                         |
+| `installedTimestamp`          | `int`            | Last update time, milliseconds since epoch                                                                                                                             |
+| `isSystemApp`                 | `bool`           |                                                                                                                                                                        |
+| `isLaunchableApp`             | `bool`           | Has a launcher activity                                                                                                                                                |
+| `category`                    | `AppCategory`    | `game`, `audio`, `video`, `image`, `social`, `news`, `maps`, `productivity`, `accessibility`, `undefined`. Needs Android 8.0 (API 26) or higher, otherwise `undefined` |
 
-### AppInfo Model
+`AppInfo` also has `copyWith`, and two apps are equal when package name and version match.
 
-```dart
-class AppInfo {
-  String name;
-  Uint8List? icon; // nullable
-  String packageName;
-  String versionName;
-  int versionCode;
-  PlatformType platformType;
-  int installedTimestamp;
-  bool isSystemApp;
-  bool isLaunchableApp;
-  AppCategory category;
-}
-```
+## Android notes
 
-`AppCategory` (game, audio, video, image, social, news, maps, productivity, accessibility,
-undefined) is available on Android 8.0 (API 26) and above, and is `undefined` otherwise.
+### Permissions
 
-### Launch App
+The plugin declares two permissions in its manifest:
 
-```
-await InstalledApps.startApp("com.example.myapp");
-```
+- `QUERY_ALL_PACKAGES`: needed to list all apps on Android 11+
+- `REQUEST_DELETE_PACKAGES`: needed for `uninstallApp`
 
-### Open App Settings
+Google Play restricts `QUERY_ALL_PACKAGES` and may reject apps that cannot justify it. Either
+declare the use in your Play Console listing, or remove it in your app manifest (you will then only
+see a limited set of apps):
 
-```
-InstalledApps.openSettings("com.example.myapp");
+```xml
+
+<uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:node="remove" />
 ```
 
-### Check System App
+With multiple flavors, keep the permission for dev builds and remove it in the Play Store flavor's
+`AndroidManifest.xml`.
 
+### Good to know
+
+- Methods never throw. On failure, they return `[]` or `null`, and log the error with `debugPrint`.
+- Platform detection is heuristic and can misclassify some apps.
+- Upgrading from 1.x? Since 2.0.0 `getInstalledApps` takes named arguments.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Issues and pull requests are welcome on
+[GitHub](https://github.com/sharmadhiraj/installed_apps/issues).
+
+```bash
+flutter pub get
+flutter analyze
+flutter test
 ```
-bool? isSystem = await InstalledApps.isSystemApp("com.example.myapp");
-```
-
-### Uninstall App
-
-```
-bool? success = await InstalledApps.uninstallApp("com.example.myapp");
-```
-
-### Show Toast
-
-```
-InstalledApps.toast("Hello", true); // true = short, false = long
-```
-
-### Check if Installed
-
-```
-bool? installed = await InstalledApps.isAppInstalled("com.example.myapp");
-```
-
----
-
-## AppCategory enum
-
-> ⚠️ Only available on Android API 28+. On lower SDK versions, all apps will have `undefined`.
-
-```dart
-enum AppCategory {
-  game(0, "Game"),
-  audio(1, "Audio"),
-  video(2, "Video"),
-  image(3, "Image"),
-  social(4, "Social"),
-  news(5, "News"),
-  maps(6, "Maps"),
-  productivity(7, "Productivity"),
-  accessibility(8, "Accessibility"),
-  undefined(-1, "Undefined");
-}
-```
-
----
-
-## PlatformType enum
-
-```dart
-enum PlatformType {
-  flutter('flutter', 'Flutter'),
-  reactNative('react_native', 'React Native'),
-  xamarin('xamarin', 'Xamarin'),
-  ionic('ionic', 'Ionic'),
-  nativeOrOthers('native_or_others', 'Native or Others');
-}
-```
-
----
-
-### QUERY_ALL_PACKAGES Permission and Play Store Review
-
-The `QUERY_ALL_PACKAGES` permission is required for some functionality of this package, but
-including it can cause Play Store rejections if your app doesn’t justify it. To handle this, either
-declare its necessity in the Play Store listing or use `tools:node="remove"` in your manifest to
-exclude it while still using the package (note this will limit visibility to all apps). For
-multi-flavor setups, you can include the permission in `src/dev/AndroidManifest.xml` for
-internal/dev builds and remove it in `src/playstore/AndroidManifest.xml` for Play Store builds,
-ensuring each flavor has the correct manifest without affecting core functionality.
-
-## Notes
-
-* Android requires `QUERY_ALL_PACKAGES` permission for full app visibility. Ensure compliance with
-  Play Store policies.
-* All methods catch exceptions and return default/fallback values to prevent crashes.
-* Platform type detection is heuristic and may misclassify some apps. Improvements are ongoing.
-
----
-
-## Support
-
-If you encounter any issues or have suggestions,
-please [open an issue on GitHub](https://github.com/sharmadhiraj/installed_apps/issues).
-Contributions and feedback are welcome!
