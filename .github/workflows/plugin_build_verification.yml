@@ -1,16 +1,18 @@
 name: Verify Plugin Build
 
 on:
+  pull_request:
+    branches: [master]
   workflow_dispatch:
     inputs:
       run_mode:
-        description: "Which flutter & kotlin versions to run"
+        description: "full: many Flutter and Kotlin versions. quick: oldest and latest only"
         required: true
-        default: "full matrix (latest 5x5)"
+        default: "full"
         type: choice
         options:
-          - full matrix (latest 5x5)
-          - latest only
+          - full
+          - quick
       platform:
         description: "Runner OS platform"
         required: true
@@ -21,19 +23,204 @@ on:
           - windows
           - macos
 
+env:
+  RUN_MODE: ${{ inputs.run_mode || 'quick' }}
+  PLATFORM: ${{ inputs.platform || 'ubuntu' }}
+
 jobs:
 
-  verify-plugin:
-    needs: fetch-versions
-    runs-on: ${{ github.event.inputs.platform == 'windows' && 'windows-latest' || github.event.inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      template_flutter_versions: ${{ steps.plan.outputs.template }}
+      flutter_versions: ${{ steps.set-flutter.outputs.versions }}
+      example_pairs: ${{ steps.pairs.outputs.pairs }}
+    steps:
+      - name: Fetch Flutter Versions
+        id: set-flutter
+        run: |
+          case "$PLATFORM" in
+            ubuntu) FLUTTER_JSON="releases_linux.json" ;;
+            windows) FLUTTER_JSON="releases_windows.json" ;;
+            macos) FLUTTER_JSON="releases_macos.json" ;;
+          esac
+
+          SLICE=5
+          if [ "$RUN_MODE" == "quick" ]; then
+            SLICE=1
+          fi
+
+          VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_JSON | \
+            jq -c --arg slice "$SLICE" '
+              .releases
+              | reduce .[] as $r (
+                  {seen: [], out: []};
+                  if ($r.channel == "stable")
+                     and ($r.version | test("^[v]?[0-9]+\\.[0-9]+\\.[0-9]+"))
+                  then
+                    ($r.version | sub("^v"; "") | capture("(?<mm>[0-9]+\\.[0-9]+)")) as $v
+                    | if (.seen | index($v.mm)) then .
+                      else
+                        .seen += [$v.mm]
+                        | .out += [$r.version | sub("^v"; "")]
+                      end
+                  else .
+                  end
+                )
+              | .out[0:($slice|tonumber)]
+            ')
+          echo "Fetched Flutter Versions: $VERSIONS"
+          if [ -z "$VERSIONS" ] || [ "$VERSIONS" == "[]" ]; then
+            echo "No Flutter versions found"; exit 1
+          fi
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
+
+      - name: Plan template app versions
+        id: plan
+        env:
+          LATEST_FLUTTER: ${{ steps.set-flutter.outputs.versions }}
+        run: |
+          # Pinned old versions never change. Each Flutter version brings its own
+          # default Gradle, AGP and Kotlin setup, like a real developer's app.
+          if [ "$RUN_MODE" == "full" ]; then
+            OLD='["3.10.6","3.16.9","3.19.6","3.22.3","3.24.5","3.27.4","3.29.3"]'
+          else
+            OLD='["3.10.6"]'
+          fi
+          TEMPLATE=$(jq -cn --argjson old "$OLD" --argjson latest "$LATEST_FLUTTER" '$old + $latest | unique')
+          echo "Template Flutter versions: $TEMPLATE"
+          echo "template=$TEMPLATE" >> $GITHUB_OUTPUT
+
+      - name: Fetch Kotlin Versions
+        id: set-kotlin
+        run: |
+          SLICE=5
+          if [ "$RUN_MODE" == "quick" ]; then
+            SLICE=1
+          fi
+          VERSIONS=$(curl -s https://endoflife.date/api/v1/products/kotlin/ | \
+            jq -c --arg slice "$SLICE" '
+              .result.releases
+              | reduce .[] as $r (
+                  {seen: [], out: []};
+                  ($r.latest.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+")) as $ok
+                  | if $ok then
+                      ($r.latest.name | capture("(?<mm>[0-9]+\\.[0-9]+)")) as $v
+                      | if (.seen | index($v.mm)) then .
+                        else
+                          .seen += [$v.mm]
+                          | .out += [$r.latest.name]
+                        end
+                    else .
+                    end
+                )
+              | .out[0:($slice|tonumber)]
+            ')
+          echo "Fetched Kotlin Versions: $VERSIONS"
+          if [ -z "$VERSIONS" ] || [ "$VERSIONS" == "[]" ]; then
+            echo "No Kotlin versions found"; exit 1
+          fi
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
+
+      - name: Plan example matrix (valid Flutter and Kotlin pairs only)
+        id: pairs
+        env:
+          FLUTTER: ${{ steps.set-flutter.outputs.versions }}
+          KOTLIN: ${{ steps.set-kotlin.outputs.versions }}
+        run: |
+          # Flutter refuses Kotlin below errorKGPVersion, so those pairs are not generated.
+          PAIRS="[]"
+          for f in $(echo "$FLUTTER" | jq -r '.[]'); do
+            MIN=$(curl -fsS "https://raw.githubusercontent.com/flutter/flutter/$f/packages/flutter_tools/gradle/src/main/kotlin/DependencyVersionChecker.kt" \
+              | grep "val errorKGPVersion" | head -1 | grep -oE "Version\([0-9]+, [0-9]+, [0-9]+\)" | grep -oE "[0-9]+" | paste -sd. -) || MIN=""
+            MIN=${MIN:-0.0.0}
+            for k in $(echo "$KOTLIN" | jq -r '.[]'); do
+              if [ "$(printf '%s\n%s\n' "$MIN" "$k" | sort -V | head -1)" == "$MIN" ]; then
+                PAIRS=$(echo "$PAIRS" | jq -c --arg f "$f" --arg k "$k" '. + [{"flutter-version": $f, "kotlin-version": $k}]')
+              else
+                echo "Skipping Flutter $f with Kotlin $k (minimum $MIN)"
+              fi
+            done
+          done
+          echo "Example matrix: $PAIRS"
+          echo "pairs=$PAIRS" >> $GITHUB_OUTPUT
+
+  # A fresh app generated by each Flutter version, using that version's own
+  # Gradle/AGP/Kotlin template, with this plugin added as a dependency.
+  template-app:
+    needs: plan
+    runs-on: ${{ inputs.platform == 'windows' && 'windows-latest' || inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-24.04' }}
+    timeout-minutes: 30
     strategy:
+      fail-fast: false
       matrix:
-        flutter-version: ${{ fromJson(needs.fetch-versions.outputs.flutter_versions) }}
-        kotlin-version: ${{ fromJson(needs.fetch-versions.outputs.kotlin_versions) }}
+        flutter-version: ${{ fromJson(needs.plan.outputs.template_flutter_versions) }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter-version }}
+          cache: false
+
+      - name: Accept Android licenses
+        shell: bash
+        run: yes | flutter doctor --android-licenses || true
+
+      - name: Create app from Flutter template
+        shell: bash
+        run: |
+          flutter create --platforms=android --project-name verify_app "$RUNNER_TEMP/verify_app"
+          cd "$RUNNER_TEMP/verify_app"
+          flutter pub add installed_apps --path "$GITHUB_WORKSPACE"
+
+      - name: Use the plugin in the app
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/verify_app"
+          printf "import 'package:installed_apps/installed_apps.dart';\n\nFuture<void> main() async {\n  await InstalledApps.getInstalledApps();\n}\n" > lib/usage.dart
+
+      - name: Build release APK (retry once on transient failures)
+        shell: bash
+        run: |
+          cd "$RUNNER_TEMP/verify_app"
+          for attempt in 1 2; do
+            flutter build apk --release && exit 0
+            echo "Build attempt $attempt failed"
+            sleep 15
+          done
+          exit 1
+        env:
+          GRADLE_OPTS: "-Xmx4g"
+
+  # The repo's example app with the latest Flutter versions and Kotlin versions.
+  example-matrix:
+    needs: plan
+    runs-on: ${{ inputs.platform == 'windows' && 'windows-latest' || inputs.platform == 'macos' && 'macos-latest' || 'ubuntu-24.04' }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.plan.outputs.example_pairs) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -56,90 +243,30 @@ jobs:
             sed -i "s/id \"org.jetbrains.kotlin.android\" version \".*\"/id \"org.jetbrains.kotlin.android\" version \"${{ matrix.kotlin-version }}\"/" example/android/settings.gradle
           fi
 
-      - name: Run flutter doctor
-        shell: bash
-        run: flutter doctor -v
-
-      - name: Remove flutter_lints from example
-        working-directory: example
-        run: flutter pub remove flutter_lints --offline || true
-
       - name: Get example dependencies
         working-directory: example
         run: flutter pub get
 
-      - name: Build example APK
+      - name: Build example APK (retry once on transient failures)
         working-directory: example
-        run: flutter build apk --release --no-tree-shake-icons
+        shell: bash
+        run: |
+          for attempt in 1 2; do
+            flutter build apk --release --no-tree-shake-icons && exit 0
+            echo "Build attempt $attempt failed"
+            sleep 15
+          done
+          exit 1
         env:
           GRADLE_OPTS: "-Xmx4g"
 
-  fetch-versions:
-    runs-on: ubuntu-latest
-    outputs:
-      flutter_versions: ${{ steps.set-flutter.outputs.versions }}
-      kotlin_versions: ${{ steps.set-kotlin.outputs.versions }}
+  publish-check:
+    runs-on: ubuntu-24.04
     steps:
-      - name: Fetch Flutter Versions
-        id: set-flutter
-        run: |
-          case "${{ github.event.inputs.platform }}" in
-            ubuntu) FLUTTER_JSON="releases_linux.json" ;;
-            windows) FLUTTER_JSON="releases_windows.json" ;;
-            macos) FLUTTER_JSON="releases_macos.json" ;;
-          esac
-          
-          SLICE=5
-          if [ "${{ github.event.inputs.run_mode }}" == "latest only" ]; then
-            SLICE=1
-          fi
-          
-          VERSIONS=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_JSON | \
-            jq -c --arg slice "$SLICE" '
-              .releases
-              | reduce .[] as $r (
-                  {seen: [], out: []};
-                  if ($r.channel == "stable")
-                     and ($r.version | test("^[v]?[0-9]+\\.[0-9]+\\.[0-9]+"))
-                  then
-                    ($r.version | sub("^v"; "") | capture("(?<mm>[0-9]+\\.[0-9]+)")) as $v
-                    | if (.seen | index($v.mm)) then .
-                      else
-                        .seen += [$v.mm]
-                        | .out += [$r.version | sub("^v"; "")]
-                      end
-                  else .
-                  end
-                )
-              | .out[0:($slice|tonumber)]
-            ')
-          echo "Fetched Flutter Versions: $VERSIONS"
-          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
-
-      - name: Fetch Kotlin Versions
-        id: set-kotlin
-        run: |
-          SLICE=5
-          if [ "${{ github.event.inputs.run_mode }}" == "latest only" ]; then
-            SLICE=1
-          fi
-          VERSIONS=$(curl -s https://endoflife.date/api/v1/products/kotlin/ | \
-            jq -c --arg slice "$SLICE" '
-              .result.releases
-              | reduce .[] as $r (
-                  {seen: [], out: []};
-                  ($r.latest.name | test("^[0-9]+\\.[0-9]+\\.[0-9]+")) as $ok
-                  | if $ok then
-                      ($r.latest.name | capture("(?<mm>[0-9]+\\.[0-9]+)")) as $v
-                      | if (.seen | index($v.mm)) then .
-                        else
-                          .seen += [$v.mm]
-                          | .out += [$r.latest.name]
-                        end
-                    else .
-                    end
-                )
-              | .out[0:($slice|tonumber)]
-            ')
-          echo "Fetched Kotlin Versions: $VERSIONS"
-          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: false
+      - name: Dry run publish
+        run: flutter pub publish --dry-run

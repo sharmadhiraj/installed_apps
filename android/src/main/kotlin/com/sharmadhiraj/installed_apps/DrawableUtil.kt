@@ -5,7 +5,6 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.Log
-import androidx.core.graphics.createBitmap
 import java.io.ByteArrayOutputStream
 
 class DrawableUtil {
@@ -30,7 +29,7 @@ class DrawableUtil {
             }
             val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 1
             val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 1
-            val bitmap = createBitmap(width, height)
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
             drawable.setBounds(0, 0, canvas.width, canvas.height)
             drawable.draw(canvas)

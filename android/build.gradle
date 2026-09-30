@@ -5,13 +5,15 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
 android {
-    namespace = "com.sharmadhiraj.installed_apps"
+    if (project.android.hasProperty("namespace")) {
+        namespace = "com.sharmadhiraj.installed_apps"
+    }
 
-    compileSdk = 36
+    compileSdk = 34
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     sourceSets {
@@ -19,16 +21,14 @@ android {
     }
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 16
     }
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach { task ->
+    if (task.hasProperty("compilerOptions")) {
+        task.compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+    } else {
+        task.kotlinOptions.jvmTarget = "1.8"
     }
-}
-
-dependencies {
-    implementation "androidx.core:core-ktx:1.13.1"
 }

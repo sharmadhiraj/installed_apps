@@ -35,7 +35,8 @@ import 'package:installed_apps/installed_apps.dart';
 
 One import gives you `InstalledApps`, `AppInfo`, `AppCategory` and `PlatformType`.
 
-Requires Android `minSdk` 21 and Java 17. See the
+Works with Flutter 3.10 and newer, and any Android Gradle Plugin and Kotlin version your app
+uses. See the
 [example app](https://github.com/sharmadhiraj/installed_apps/tree/master/example) for a full demo.
 
 ## Quick start

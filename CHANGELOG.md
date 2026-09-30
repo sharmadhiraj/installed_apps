@@ -9,7 +9,7 @@
 * `openSettings` and `toast` now complete their native calls.
 * Launching settings and uninstall screens works when no Activity is attached.
 * Apps whose icon cannot be rendered now return a null icon instead of empty bytes.
-* Modernized Android Gradle setup: no pinned AGP/Kotlin, Java 17, minSdk 21.
+* Modernized Android Gradle setup: no pinned AGP or Kotlin versions, works with old and new Kotlin Gradle Plugins, no androidx dependency.
 * Faster platform detection (single pass over APK entries).
 * Models and enums are now exported from `installed_apps.dart`.
 * Added `AppInfo.toString`, unit tests and a CI workflow.

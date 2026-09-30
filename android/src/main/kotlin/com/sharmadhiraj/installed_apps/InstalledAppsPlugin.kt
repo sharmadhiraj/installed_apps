@@ -13,7 +13,6 @@ import android.util.Log
 import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import android.widget.Toast.LENGTH_SHORT
-import androidx.core.net.toUri
 import com.sharmadhiraj.installed_apps.Util.Companion.convertAppToMap
 import com.sharmadhiraj.installed_apps.Util.Companion.getLaunchablePackageNames
 import com.sharmadhiraj.installed_apps.Util.Companion.getPackageInfo
@@ -271,7 +270,7 @@ class InstalledAppsPlugin : MethodCallHandler, FlutterPlugin, ActivityAware {
     private fun uninstallApp(context: Context, packageName: String): Boolean {
         return try {
             val intent = Intent(Intent.ACTION_DELETE).apply {
-                data = "package:$packageName".toUri()
+                data = Uri.parse("package:$packageName")
             }
             startActivity(context, intent)
             true

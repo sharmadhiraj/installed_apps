@@ -48,13 +48,16 @@ class PlatformTypeUtil {
 
         private fun scanApkForPlatform(apkPath: String?): String {
             if (apkPath.isNullOrEmpty()) return "unknown"
+            var zipFile: ZipFile? = null
             return try {
-                ZipFile(apkPath).use { zipFile ->
+                val zip = ZipFile(apkPath)
+                zipFile = zip
+                run {
                     var flutter = false
                     var reactNative = false
                     var xamarin = false
                     var ionic = false
-                    for (entry in zipFile.entries()) {
+                    for (entry in zip.entries()) {
                         val name = entry.name
                         when {
                             name.contains("/flutter_assets/") -> flutter = true
@@ -78,6 +81,11 @@ class PlatformTypeUtil {
             } catch (e: Exception) {
                 Log.w("InstalledAppsPlugin", "getPlatform: ${e.message}")
                 "unknown"
+            } finally {
+                try {
+                    zipFile?.close()
+                } catch (_: Exception) {
+                }
             }
         }
 
