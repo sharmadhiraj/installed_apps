@@ -1,12 +1,14 @@
 name: installed_apps
-description: Flutter plugin with utility methods related to installed apps on device.
-version: 2.1.2
+description: List installed apps on Android, get app info and icons, launch, uninstall and open app settings. Filter by package name, system apps or platform.
+version: 2.2.0
 repository: https://github.com/sharmadhiraj/installed_apps
 issue_tracker: https://github.com/sharmadhiraj/installed_apps/issues
 topics:
   - android
   - apps
   - package-manager
+  - installed-apps
+  - app-list
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

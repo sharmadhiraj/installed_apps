@@ -1,5 +1,9 @@
-## 2.1.2
+## 2.2.0
 
+* Added `packageNames` option to `getInstalledApps` to restrict results to specific packages.
+* Added `detectPlatformType` option to `getInstalledApps` to skip the slower platform detection.
+* Added `withIcon` option to `getAppInfo`.
+* Added `AppInfo.copyWith`, `==` and `hashCode`.
 * Fixed Activity leak and stale context after the Activity detaches.
 * `getInstalledApps` no longer hangs on native errors and now replies on the main thread.
 * `openSettings` and `toast` now complete their native calls.
