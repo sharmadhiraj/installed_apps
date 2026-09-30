@@ -7,12 +7,6 @@ device. You can list installed apps, get app info, launch apps, open settings, a
 
 ---
 
-## Version 2.0.0 Breaking Changes
-
-Version 2.0.0 has some breaking changes, for example, `getInstalledApps` now uses **named arguments
-** instead of positional arguments as before. Additionally, some other argument names have been
-updated.
-
 ## Features
 
 * List installed apps with optional filters:
@@ -87,6 +81,9 @@ class AppInfo {
 }
 ```
 
+`AppCategory` (game, audio, video, image, social, news, maps, productivity, accessibility,
+undefined) is available on Android 8.0 (API 26) and above, and is `undefined` otherwise.
+
 ### Launch App
 
 ```
@@ -109,6 +106,12 @@ bool? isSystem = await InstalledApps.isSystemApp("com.example.myapp");
 
 ```
 bool? success = await InstalledApps.uninstallApp("com.example.myapp");
+```
+
+### Show Toast
+
+```
+InstalledApps.toast("Hello", true); // true = short, false = long
 ```
 
 ### Check if Installed

@@ -1,3 +1,15 @@
+## 2.1.2
+
+* Fixed Activity leak and stale context after the Activity detaches.
+* `getInstalledApps` no longer hangs on native errors and now replies on the main thread.
+* `openSettings` and `toast` now complete their native calls.
+* Launching settings and uninstall screens works when no Activity is attached.
+* Apps whose icon cannot be rendered now return a null icon instead of empty bytes.
+* Modernized Android Gradle setup: no pinned AGP/Kotlin, Java 17, minSdk 21.
+* Faster platform detection (single pass over APK entries).
+* Models and enums are now exported from `installed_apps.dart`.
+* Added `AppInfo.toString`, unit tests and a CI workflow.
+
 ## 2.1.1
 
 * Internal fixes and improvements
