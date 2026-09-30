@@ -5,7 +5,7 @@ import 'package:installed_apps_example/screens/app_list.dart';
 import 'package:installed_apps_example/util/common.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class HomeScreen extends StatelessWidget {
           "Get installed apps on device. With options to exclude system app, get app icon & matching package name prefix.",
           () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AppListScreen()),
+            MaterialPageRoute(builder: (context) => const AppListScreen()),
           ),
         ),
         _buildListItem(
@@ -37,14 +37,14 @@ class HomeScreen extends StatelessWidget {
           "Get app info with package name",
           () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AppInfoScreen()),
+            MaterialPageRoute(builder: (context) => const AppInfoScreen()),
           ),
         ),
         _buildListItem(
           context,
           "Start App",
           "Start app with package name. Get callback of success or failure.",
-          () => InstalledApps.startApp("com.google.android.gm"),
+          () => InstalledApps.startApp("com.google.android.calendar"),
         ),
         _buildListItem(
           context,
@@ -63,7 +63,7 @@ class HomeScreen extends StatelessWidget {
           "Uninstall app",
           "Uninstall app with package name",
           () => InstalledApps.uninstallApp(
-              "com.sharmadhiraj.installed_apps_example"),
+              "com.sharmadhiraj.installed_apps_example",),
         ),
         _buildListItem(
           context,

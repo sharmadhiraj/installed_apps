@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:installed_apps/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
 
 class AppInfoScreen extends StatelessWidget {
   final AppInfo? app;
 
-  const AppInfoScreen({Key? key, this.app}) : super(key: key);
+  const AppInfoScreen({super.key, this.app});
 
   @override
   Widget build(BuildContext context) {
@@ -33,16 +32,16 @@ class AppInfoScreen extends StatelessWidget {
   }
 
   Widget _buildProgressIndicator() {
-    return Center(child: Text("Getting app info ...."));
+    return const Center(child: Text("Getting app info ...."));
   }
 
   Widget _buildError() {
-    return Center(child: Text("Error while getting app info ...."));
+    return const Center(child: Text("Error while getting app info ...."));
   }
 
   Widget _buildAppInfo(AppInfo app) {
     return ListView(
-      padding: EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 24),
@@ -56,35 +55,35 @@ class AppInfoScreen extends StatelessWidget {
         Center(
           child: Text(
             app.name,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 24,
             ),
           ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         ListTile(
-          title: Text("Package Name"),
+          title: const Text("Package Name"),
           subtitle: Text(app.packageName),
         ),
         ListTile(
-          title: Text("Version Name"),
+          title: const Text("Version Name"),
           subtitle: Text(app.versionName),
         ),
         ListTile(
-          title: Text("Version Code"),
+          title: const Text("Version Code"),
           subtitle: Text(app.versionCode.toString()),
         ),
         ListTile(
-          title: Text("Category"),
+          title: const Text("Category"),
           subtitle: Text(app.category.toString()),
         ),
         ListTile(
-          title: Text("Platform Type"),
+          title: const Text("Platform Type"),
           subtitle: Text(app.platformType.name),
         ),
         ListTile(
-          title: Text("Installed On"),
+          title: const Text("Installed On"),
           subtitle: Text(
             DateTime.fromMillisecondsSinceEpoch(app.installedTimestamp)
                 .toLocal()
@@ -92,10 +91,10 @@ class AppInfoScreen extends StatelessWidget {
           ),
         ),
         Container(
-          margin: EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: 16),
           child: ElevatedButton(
             onPressed: () => InstalledApps.startApp(app.packageName),
-            child: Text("Open App"),
+            child: const Text("Open App"),
           ),
         ),
       ],

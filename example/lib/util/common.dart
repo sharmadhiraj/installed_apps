@@ -39,7 +39,7 @@ class CommonUtil {
           content: Text(text),
           actions: [
             TextButton(
-              child: Text("Close"),
+              child: const Text("Close"),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
           ],

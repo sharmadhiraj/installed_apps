@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:installed_apps/app_info.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'package:installed_apps_example/screens/app_info.dart';
 
 class AppListScreen extends StatefulWidget {
-  const AppListScreen({Key? key}) : super(key: key);
+  const AppListScreen({super.key});
 
   @override
   State<AppListScreen> createState() => _AppListScreenState();
@@ -13,7 +12,7 @@ class AppListScreen extends StatefulWidget {
 class _AppListScreenState extends State<AppListScreen> {
   List<AppInfo>? apps;
   bool loading = true;
-  final Stopwatch _stopwatch = Stopwatch();
+  AppFilterType filter = AppFilterType.all;
 
   @override
   void initState() {
@@ -22,18 +21,23 @@ class _AppListScreenState extends State<AppListScreen> {
   }
 
   Future<void> _loadApps() async {
-    _stopwatch.start();
-    final List<AppInfo> result = await InstalledApps.getInstalledApps(
+    setState(() => loading = true);
+    List<AppInfo> result = await InstalledApps.getInstalledApps(
       excludeSystemApps: false,
       withIcon: true,
     );
-    _stopwatch.stop();
-
-    final String message =
-        "Took ${_stopwatch.elapsedMilliseconds} ms for ${result.length} apps";
-    debugPrint(message);
-    InstalledApps.toast(message, true);
-
+    if (filter == AppFilterType.flutter) {
+      result = await InstalledApps.getInstalledApps(
+        excludeSystemApps: false,
+        withIcon: true,
+        platformType: PlatformType.flutter,
+      );
+    } else if (filter == AppFilterType.withoutSystemApps) {
+      result = await InstalledApps.getInstalledApps(
+        withIcon: true,
+        platformType: PlatformType.flutter,
+      );
+    }
     setState(() {
       apps = result;
       loading = false;
@@ -44,12 +48,46 @@ class _AppListScreenState extends State<AppListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Installed Apps")),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : apps == null
-              ? const Center(child: Text("Error occurred"))
-              : _buildListView(),
+      body: _buildBody(),
     );
+  }
+
+  Widget _buildBody() {
+    if (loading) {
+      return const Center(child: CircularProgressIndicator());
+    } else {
+      return apps == null
+          ? const Center(child: Text("Error occurred"))
+          : Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                children: [
+                  Wrap(
+                    spacing: 4,
+                    children: AppFilterType.values
+                        .map(
+                          (e) => ElevatedButton(
+                            onPressed: () {
+                              setState(() => filter = e);
+                              _loadApps();
+                            },
+                            child: Text(e.name),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Text(
+                      filter.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Expanded(child: _buildListView()),
+                ],
+              ),
+            );
+    }
   }
 
   Widget _buildListView() {
@@ -71,7 +109,7 @@ class _AppListScreenState extends State<AppListScreen> {
         subtitle: Text(app.getVersionInfo()),
         trailing: Text(
           app.platformType.name[0],
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
         ),
         onTap: () => Navigator.push(
           context,
@@ -80,4 +118,14 @@ class _AppListScreenState extends State<AppListScreen> {
       ),
     );
   }
+}
+
+enum AppFilterType {
+  all("All Apps"),
+  flutter("Flutter Apps"),
+  withoutSystemApps("Without System Apps");
+
+  final String name;
+
+  const AppFilterType(this.name);
 }
