@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:installed_apps_example/screens/home.dart';
+import 'package:installed_apps_example/screens/app_list_screen.dart';
 
-void main() => runApp(const ExampleInstalledApps());
+void main() => runApp(const ExampleApp());
 
-class ExampleInstalledApps extends MaterialApp {
-  const ExampleInstalledApps({super.key});
-
-  @override
-  Widget get home => const HomeScreen();
+class ExampleApp extends StatelessWidget {
+  const ExampleApp({super.key});
 
   @override
-  ThemeData? get theme => ThemeData(useMaterial3: false);
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: "Installed Apps",
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(colorSchemeSeed: Colors.teal),
+      darkTheme: ThemeData(
+        colorSchemeSeed: Colors.teal,
+        brightness: Brightness.dark,
+      ),
+      home: const AppListScreen(),
+    );
+  }
 }
