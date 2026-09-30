@@ -18,6 +18,11 @@ class InstalledApps {
   /// [withIcon] — whether to include app icons in the list. Default is false.
   /// [packageNamePrefix] — optional prefix to filter apps whose package names start with this value. Default is null.
   /// [platformType] — optional parameter to specify the app platform type. Default is null.
+  /// [detectPlatformType] — whether to detect each app's platform type. Default is true.
+  /// When false, detection is skipped (faster) and [AppInfo.platformType] is
+  /// [PlatformType.nativeOrOthers], unless [platformType] is set, which always needs detection.
+  /// [packageNames] — optional list of package names to restrict the result to. Packages that
+  /// are not installed are ignored, and an empty list returns an empty result. Default is null.
   ///
   /// Returns a list of [AppInfo] objects representing the installed apps.
   static Future<List<AppInfo>> getInstalledApps({
@@ -26,7 +31,10 @@ class InstalledApps {
     bool withIcon = false,
     String? packageNamePrefix,
     PlatformType? platformType,
+    bool detectPlatformType = true,
+    List<String>? packageNames,
   }) async {
+    if (packageNames != null && packageNames.isEmpty) return [];
     try {
       final dynamic apps = await _channel.invokeMethod(
         "getInstalledApps",
@@ -36,6 +44,8 @@ class InstalledApps {
           "with_icon": withIcon,
           "package_name_prefix": packageNamePrefix,
           "platform_type": platformType?.slug,
+          "detect_platform_type": detectPlatformType,
+          "package_names": packageNames,
         },
       );
       return AppInfo.parseList(apps);
@@ -97,16 +107,19 @@ class InstalledApps {
   /// Retrieves information about an app with the specified package name.
   ///
   /// [packageName] is the package name of the app to retrieve information for.
+  /// [withIcon] specifies whether to include the app icon. Default is true.
   ///
   /// Returns [AppInfo] for the given package name, or null if not found.
   static Future<AppInfo?> getAppInfo(
-    String packageName,
-  ) async {
+    String packageName, {
+    bool withIcon = true,
+  }) async {
     try {
       final dynamic app = await _channel.invokeMethod(
         "getAppInfo",
         {
           "package_name": packageName,
+          "with_icon": withIcon,
         },
       );
       if (app == null) {

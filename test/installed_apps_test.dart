@@ -66,6 +66,30 @@ void main() {
       expect(apps.map((a) => a.name), ["Alpha", "Zed"]);
     });
 
+    test("equality ignores icon and other fields", () {
+      final AppInfo a = AppInfo.create({
+        "name": "A",
+        "package_name": "com.a",
+        "version_name": "1",
+        "version_code": 1,
+      });
+      expect(a, a.copyWith(name: "Renamed", isSystemApp: true));
+      expect(a.hashCode, a.copyWith(name: "Renamed").hashCode);
+      expect(a == a.copyWith(versionCode: 2), false);
+    });
+
+    test("copyWith overrides given fields only", () {
+      final AppInfo a = AppInfo.create({
+        "name": "A",
+        "package_name": "com.a",
+        "category": 1,
+      });
+      final AppInfo b = a.copyWith(name: "B");
+      expect(b.name, "B");
+      expect(b.packageName, "com.a");
+      expect(b.category, AppCategory.audio);
+    });
+
     test("parseList handles null and non-list input", () {
       expect(AppInfo.parseList(null), isEmpty);
       expect(AppInfo.parseList("x"), isEmpty);
@@ -107,7 +131,24 @@ void main() {
         "with_icon": true,
         "package_name_prefix": "com.",
         "platform_type": "flutter",
+        "detect_platform_type": true,
+        "package_names": null,
       });
+    });
+
+    test("getInstalledApps sends packageNames and detectPlatformType",
+        () async {
+      await InstalledApps.getInstalledApps(
+        packageNames: ["com.a", "com.b"],
+        detectPlatformType: false,
+      );
+      expect(calls.single.arguments["package_names"], ["com.a", "com.b"]);
+      expect(calls.single.arguments["detect_platform_type"], false);
+    });
+
+    test("getInstalledApps returns empty for empty packageNames", () async {
+      expect(await InstalledApps.getInstalledApps(packageNames: []), isEmpty);
+      expect(calls, isEmpty);
     });
 
     test("getInstalledApps returns empty list on error", () async {
@@ -117,7 +158,15 @@ void main() {
 
     test("getAppInfo returns null when not found", () async {
       expect(await InstalledApps.getAppInfo("com.missing"), isNull);
-      expect(calls.single.arguments, {"package_name": "com.missing"});
+      expect(calls.single.arguments, {
+        "package_name": "com.missing",
+        "with_icon": true,
+      });
+    });
+
+    test("getAppInfo sends withIcon", () async {
+      await InstalledApps.getAppInfo("com.demo", withIcon: false);
+      expect(calls.single.arguments["with_icon"], false);
     });
 
     test("getAppInfo parses result", () async {
