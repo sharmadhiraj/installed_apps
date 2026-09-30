@@ -1,7 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:installed_apps/app_info.dart';
 import 'package:installed_apps/platform_type.dart';
+
+export 'package:installed_apps/app_category.dart';
+export 'package:installed_apps/app_info.dart';
+export 'package:installed_apps/platform_type.dart';
 
 /// A utility class for interacting with installed apps on the device.
 class InstalledApps {
@@ -24,7 +28,7 @@ class InstalledApps {
     PlatformType? platformType,
   }) async {
     try {
-      dynamic apps = await _channel.invokeMethod(
+      final dynamic apps = await _channel.invokeMethod(
         "getInstalledApps",
         {
           "exclude_system_apps": excludeSystemApps,
@@ -48,7 +52,7 @@ class InstalledApps {
   /// Returns a boolean indicating whether the operation was successful.
   static Future<bool?> startApp(String packageName) async {
     try {
-      return _channel.invokeMethod(
+      return await _channel.invokeMethod(
         "startApp",
         {"package_name": packageName},
       );
@@ -99,7 +103,7 @@ class InstalledApps {
     String packageName,
   ) async {
     try {
-      var app = await _channel.invokeMethod(
+      final dynamic app = await _channel.invokeMethod(
         "getAppInfo",
         {
           "package_name": packageName,
@@ -123,7 +127,7 @@ class InstalledApps {
   /// Returns a boolean indicating whether the app is a system app.
   static Future<bool?> isSystemApp(String packageName) async {
     try {
-      return _channel.invokeMethod(
+      return await _channel.invokeMethod(
         "isSystemApp",
         {"package_name": packageName},
       );
@@ -140,7 +144,7 @@ class InstalledApps {
   /// Returns a boolean indicating whether the uninstallation was successful.
   static Future<bool?> uninstallApp(String packageName) async {
     try {
-      return _channel.invokeMethod(
+      return await _channel.invokeMethod(
         "uninstallApp",
         {"package_name": packageName},
       );
@@ -157,7 +161,7 @@ class InstalledApps {
   /// Returns a boolean indicating whether the app is installed.
   static Future<bool?> isAppInstalled(String packageName) async {
     try {
-      return _channel.invokeMethod(
+      return await _channel.invokeMethod(
         "isAppInstalled",
         {"package_name": packageName},
       );

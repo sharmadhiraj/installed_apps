@@ -45,16 +45,23 @@ class AppInfo {
 
   String getVersionInfo() => "$versionName ($versionCode)";
 
+  @override
+  String toString() =>
+      "AppInfo(name: $name, packageName: $packageName, version: ${getVersionInfo()}, "
+      "platformType: $platformType, isSystemApp: $isSystemApp, category: $category)";
+
   static List<AppInfo> parseList(dynamic apps) {
     if (apps == null || apps is! List || apps.isEmpty) return [];
     final List<AppInfo> appInfoList = apps
-        .where((element) =>
-            element is Map &&
-            element.containsKey("name") &&
-            element.containsKey("package_name"))
-        .map((app) => AppInfo.create(app))
-        .toList();
-    appInfoList.sort((a, b) => a.name.compareTo(b.name));
+        .where(
+          (element) =>
+              element is Map &&
+              element.containsKey("name") &&
+              element.containsKey("package_name"),
+        )
+        .map(AppInfo.create)
+        .toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
     return appInfoList;
   }
 }
