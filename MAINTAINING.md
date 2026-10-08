@@ -5,6 +5,7 @@
 - **Branch names:** short and descriptive, no slashes and no prefixes (e.g. `migrate-to-built-in-kotlin`, `add-package-names-option`, `release-x.y.z`).
 - **Work branches** are created from `develop`, and a PR targets `develop`. Name the issue in the PR body, but do not use `Closes #N` (it only auto-closes on the default branch). Issues are commented and closed at release time.
 - **Version and changelog:** never touched on work branches. The version bump and CHANGELOG entry are done on the release branch.
+- **Checks:** every PR to `develop` runs `CI` (`analyze-and-test`) and the quick `Verify Plugin Build` (`verify`). Merge only when both are green. A new push to a PR cancels its older runs automatically. Use `gh pr checks` to see them.
 - **Merging a work branch:** squash merge into `develop`, so each change is one commit. Use a clear PR title, it becomes the commit subject.
 
   ```bash
