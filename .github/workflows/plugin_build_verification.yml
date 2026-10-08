@@ -2,7 +2,7 @@ name: Verify Plugin Build
 
 on:
   pull_request:
-    branches: [master]
+    branches: [develop, master]
   workflow_dispatch:
     inputs:
       run_mode:
@@ -270,3 +270,12 @@ jobs:
           cache: false
       - name: Dry run publish
         run: flutter pub publish --dry-run
+
+  verify:
+    needs: [plan, template-app, example-matrix, publish-check]
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Fail if any job did not succeed
+        run: |
+          echo '${{ toJson(needs) }}' | jq -e 'all(.[]; .result == "success")'
