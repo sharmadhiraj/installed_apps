@@ -13,6 +13,12 @@
   gh pr merge --squash
   ```
 
+- **After any merge** (work branch into `develop`, release branch into `master`), delete the remote branch and keep the local one. Only `develop` and `master` stay on the remote.
+
+  ```bash
+  git push origin --delete <branch>
+  ```
+
 - **Releases** are cut from `develop` and merged into `master` with a merge commit, see below. Never squash or rebase into `master`, or `develop` and `master` diverge.
 
 # Release process
