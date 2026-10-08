@@ -23,6 +23,10 @@ on:
           - windows
           - macos
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   RUN_MODE: ${{ inputs.run_mode || 'quick' }}
   PLATFORM: ${{ inputs.platform || 'ubuntu' }}
