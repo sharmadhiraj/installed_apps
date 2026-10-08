@@ -1,6 +1,6 @@
 name: installed_apps
 description: List installed apps on Android, get app info and icons, launch, uninstall and open app settings. Filter by package name, system apps or platform.
-version: 2.2.0
+version: 2.2.1
 repository: https://github.com/sharmadhiraj/installed_apps
 issue_tracker: https://github.com/sharmadhiraj/installed_apps/issues
 topics:

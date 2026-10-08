@@ -1,3 +1,7 @@
+## 2.2.1
+
+* Android: no longer applies the Kotlin Gradle Plugin when the host uses Built-in Kotlin (AGP 9+), removing the Flutter KGP deprecation warning. Older hosts are unaffected.
+
 ## 2.2.0
 
 * Added `packageNames` option to `getInstalledApps` to restrict results to specific packages.
