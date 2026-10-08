@@ -2,7 +2,10 @@ group = "com.sharmadhiraj.installed_apps"
 version = "1.0-SNAPSHOT"
 
 apply plugin: "com.android.library"
-apply plugin: "kotlin-android"
+
+if (project.extensions.findByName("kotlin") == null) {
+    pluginManager.apply("kotlin-android")
+}
 
 android {
     if (project.android.hasProperty("namespace")) {
